@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You for Your Donation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .thankyou-message {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .donation-details {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            border-radius: 6px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #fed7d7;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #744210;
+            width: 140px;
+            flex-shrink: 0;
+        }
+        .detail-value {
+            color: #2d3748;
+            flex: 1;
+        }
+        .amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #dd6b20;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .impact {
+            background-color: #f7fafc;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .impact h3 {
+            color: #2d3748;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .impact-item {
+            text-align: center;
+            padding: 15px;
+        }
+        .impact-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #ed8936;
+        }
+        .impact-text {
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .message-box {
+            background-color: #e6fffa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            border-left: 4px solid #38b2ac;
+        }
+        .message-box p {
+            margin: 0;
+            font-style: italic;
+            color: #234e52;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(237, 137, 54, 0.2);
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(237, 137, 54, 0.25);
+        }
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 30px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 14px;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .contact-info a {
+            color: #ed8936;
+            text-decoration: none;
+        }
+        .tax-info {
+            background-color: #fefcbf;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #744210;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thank You for Your Generous Donation!</h1>
+            <p>Your support is making a real difference</p>
+        </div>
+        
+        <div class="content">
+            <div class="thankyou-message">
+                <p>Dear <strong>{{name}}</strong>,</p>
+                <p>On behalf of the entire Smart Road Management team and the communities we serve, we want to express our heartfelt gratitude for your generous contribution.</p>
+            </div>
+            
+            <div class="amount">₹{{amount}}</div>
+            
+            <div class="donation-details">
+                <div class="detail-row">
+                    <div class="detail-label">Donation Date:</div>
+                    <div class="detail-value">{{date}}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Transaction ID:</div>
+                    <div class="detail-value">{{transactionId}}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Payment Status:</div>
+                    <div class="detail-value">
+                        <span style="color: #38a169; font-weight: 600;">✓ Completed</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Receipt:</div>
+                    <div class="detail-value">
+                        <a href="{{appUrl}}/donations/receipt/{{transactionId}}" style="color: #ed8936; text-decoration: none; font-weight: 600;">Download Receipt</a>
+                    </div>
+                </div>
+            </div>
+            
+            {{#if message}}
+            <div class="message-box">
+                <p>"{{message}}"</p>
+            </div>
+            {{/if}}
+            
+            <div class="impact">
+                <h3>Your donation will help:</h3>
+                <div class="impact-grid">
+                    <div class="impact-item">
+                        <div class="impact-icon">🕳️</div>
+                        <div class="impact-text">Repair potholes and road surfaces</div>
+                    </div>
+                    <div class="impact-item">
+                        <div class="impact-icon">💡</div>
+                        <div class="impact-text">Install and maintain street lights</div>
+                    </div>
+                    <div class="impact-item">
+                        <div class="impact-icon">💧</div>
+                        <div class="impact-text">Clean drainage systems</div>
+                    </div>
+                    <div class="impact-item">
+                        <div class="impact-icon">🪧</div>
+                        <div class="impact-text">Improve road signage</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{appUrl}}/dashboard" class="cta-button">View Your Donation History</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="tax-info">
+                <p><strong>Tax Information:</strong></p>
+                <p>This donation is tax-deductible under Section 80G of the Income Tax Act. Your receipt has been generated and is available for download above.</p>
+            </div>
+            
+            <p><strong>How we ensure transparency:</strong></p>
+            <p>• 85% of donations go directly to road improvement projects</p>
+            <p>• 10% covers operational costs</p>
+            <p>• 5% goes to community awareness programs</p>
+            <p>• Regular project updates and financial reports are published</p>
+            
+            <div class="contact-info">
+                <p><strong>Questions about your donation?</strong></p>
+                <p>Email: <a href="mailto:donations@smartroad.com">donations@smartroad.com</a></p>
+                <p>Phone: +91 98765 43210</p>
+                <p>Hours: Monday-Friday, 9 AM - 6 PM</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{year}} Smart Road Management. All rights reserved.</p>
+            <p>Registration Number: AA-12345/SRM/2023</p>
+            <p>80G Certificate No.: 1234567890</p>
+            <p>Smart Road Management, 123 Civic Center, City, State 560001</p>
+        </div>
+    </div>
+</body>
+</html>

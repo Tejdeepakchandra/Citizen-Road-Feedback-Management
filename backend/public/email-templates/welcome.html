@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Smart Road Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+        .features {
+            background-color: #f7fafc;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .features h3 {
+            color: #4a5568;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            background-color: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        .feature-text {
+            flex: 1;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11);
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1);
+        }
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 30px 0;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+            font-size: 14px;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Smart Road Management!</h1>
+            <p>Transforming Roads, Building Communities</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                <p>Hello <strong>{{name}}</strong>,</p>
+                <p>Welcome aboard! We're excited to have you join our community dedicated to improving road infrastructure and creating safer, better roads for everyone.</p>
+            </div>
+            
+            <div class="features">
+                <h3>Here's what you can do with your account:</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-text">
+                        <strong>Report Issues</strong>
+                        <p>Easily report road problems like potholes, drainage issues, broken streetlights, and more with photos and location details.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-text">
+                        <strong>Track Progress</strong>
+                        <p>Monitor the status of your reports in real-time, from submission to completion, with regular updates.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-text">
+                        <strong>Before & After</strong>
+                        <p>See visual transformations of completed road repairs in your community gallery.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">💝</div>
+                    <div class="feature-text">
+                        <strong>Support Improvements</strong>
+                        <p>Contribute to road development projects through secure donations and see your impact.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{appUrl}}/dashboard" class="cta-button">Go to Your Dashboard</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div style="color: #4a5568;">
+                <p><strong>Getting Started:</strong></p>
+                <p>1. Complete your profile</p>
+                <p>2. Report your first road issue</p>
+                <p>3. Explore the transformation gallery</p>
+                <p>4. Join community discussions</p>
+            </div>
+            
+            <div class="contact-info">
+                <p><strong>Need Help?</strong></p>
+                <p>Email: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></p>
+                <p>Phone: +91 12345 67890</p>
+                <p>Hours: Monday-Friday, 9 AM - 6 PM</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{year}} Smart Road Management. All rights reserved.</p>
+            <p>This email was sent to {{email}}. If you didn't create an account, please ignore this email.</p>
+            <p>Smart Road Management, 123 Civic Center, City, State 560001</p>
+        </div>
+    </div>
+</body>
+</html>

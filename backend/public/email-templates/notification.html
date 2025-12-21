@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+            border-radius: 10px 10px 0 0; 
+        }
+        .content { 
+            padding: 30px; 
+            background: #f9f9f9; 
+            border-radius: 0 0 10px 10px; 
+        }
+        .notification-type {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .message-box {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            font-size: 12px;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Smart Road Management</h1>
+    </div>
+    <div class="content">
+        <h2>Hello ${name},</h2>
+        
+        <div class="notification-type">${type}</div>
+        
+        <div class="message-box">
+            <p>${message}</p>
+        </div>
+        
+        <p>Thank you for being part of our Smart Road Management system!</p>
+        
+        <p>
+            Best regards,<br>
+            <strong>Smart Road Management Team</strong>
+        </p>
+    </div>
+    <div class="footer">
+        <p>&copy; ${year} Smart Road Management. All rights reserved.</p>
+        <p>For support, please contact: support@smartroad.com</p>
+    </div>
+</body>
+</html>
