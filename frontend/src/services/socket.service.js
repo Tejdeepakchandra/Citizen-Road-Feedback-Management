@@ -83,7 +83,7 @@ class SocketService {
     // Support both Vite and React env variables
     const apiUrl = import.meta.env.VITE_API_URL || 
                    process.env.REACT_APP_API_URL || 
-                   'http://localhost:5000';
+                   'https://citizen-road-backend.onrender.com';
     
     // Convert http/https to ws/wss
     const serverUrl = apiUrl.replace(/^https?:\/\//, (match) => {

@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext();
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://citizen-road-backend.onrender.com/api';
 
 // AXIOS INSTANCE
 export const axiosInstance = axios.create({

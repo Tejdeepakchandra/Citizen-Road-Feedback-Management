@@ -72,7 +72,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 
 // API Configuration
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://citizen-road-backend.onrender.com/api";
 
 // API Service functions
 const api = {

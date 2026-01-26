@@ -12,7 +12,7 @@ export const useSocket = () => {
     if (!token) return;
 
     // Create socket instance
-    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
+    const socket = io(import.meta.env.VITE_SOCKET_URL || "https://citizen-road-backend.onrender.com", {
       auth: { token },
       transports: ["websocket"],
     });
