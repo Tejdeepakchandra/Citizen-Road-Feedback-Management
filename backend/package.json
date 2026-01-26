@@ -30,10 +30,10 @@
     "nodemailer": "^6.9.5",
     "razorpay": "^2.8.6",
     "socket.io": "^4.7.2",
+    "morgan": "^1.10.1",
     "winston": "^3.10.0"
   },
   "devDependencies": {
-    "morgan": "^1.10.1",
     "nodemon": "^3.0.1"
   },
   "engines": {
