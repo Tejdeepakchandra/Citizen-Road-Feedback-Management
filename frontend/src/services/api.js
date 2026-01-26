@@ -13,7 +13,8 @@ const api = axios.create({
 // Request interceptor - Add token to all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    // Try localStorage first, then sessionStorage
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       // Debug: Log token being sent (remove in production)
@@ -22,7 +23,7 @@ api.interceptors.request.use(
       }
     } else {
       if (import.meta.env.DEV) {
-        console.warn('⚠️ No token found in localStorage for request to:', config.url);
+        console.warn('⚠️ No token found in localStorage or sessionStorage for request to:', config.url);
       }
     }
     return config;
@@ -38,8 +39,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.error('❌ Unauthorized (401):', error.response?.data?.message);
+      // Clear from both storage methods
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
       window.location.href = "/login";
     }
     return Promise.reject(error);

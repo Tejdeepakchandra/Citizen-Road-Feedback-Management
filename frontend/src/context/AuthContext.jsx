@@ -16,7 +16,8 @@ export const axiosInstance = axios.create({
 
 // Add token to requests automatically
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  // Try localStorage first, then sessionStorage
+  let token = localStorage.getItem("token") || sessionStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
     // Debug: Log token being sent (remove in production)
@@ -25,7 +26,7 @@ axiosInstance.interceptors.request.use((config) => {
     }
   } else {
     if (import.meta.env.DEV) {
-      console.warn('⚠️ No token found in localStorage for axiosInstance request to:', config.url);
+      console.warn('⚠️ No token found in localStorage or sessionStorage for axiosInstance request to:', config.url);
     }
   }
   return config;
@@ -36,8 +37,11 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      // Clear from both storage methods
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
       window.location.href = "/login";
       toast.error("Session expired. Please login again.");
     }
@@ -103,12 +107,14 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Load user on refresh
+  // Load user on refresh - simplified to avoid unnecessary API calls
   useEffect(() => {
     const init = async () => {
-      const savedToken = localStorage.getItem("token");
+      // Try localStorage first, then sessionStorage
+      let savedToken = localStorage.getItem("token") || sessionStorage.getItem("token");
+      let savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
 
-      if (!savedToken) {
+      if (!savedToken || !savedUser) {
         setLoading(false);
         setIsInitialized(true);
         return;
@@ -116,43 +122,38 @@ export const AuthProvider = ({ children }) => {
 
       // Check if token is valid
       if (!isTokenValid(savedToken)) {
-        console.log("Token invalid on init, logging out");
-        logout();
+        console.log("Token invalid/expired on init, logging out");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
         setLoading(false);
         setIsInitialized(true);
         return;
       }
 
       try {
+        // Restore token and user from storage
+        const userData = JSON.parse(savedUser);
         setToken(savedToken);
+        setUser(userData);
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
 
-        const endpoints = ["/auth/me", "/users/me", "/auth/profile"];
-        let userData = null;
-        
-        for (const endpoint of endpoints) {
-          try {
-            const response = await axiosInstance.get(endpoint);
-            if (response.data) {
-              userData = response.data.data || response.data.user || response.data;
-              if (userData) break;
-            }
-          } catch (endpointErr) {
-            continue;
-          }
-        }
+        // Ensure both storage methods have the token
+        localStorage.setItem("token", savedToken);
+        sessionStorage.setItem("token", savedToken);
 
-        if (userData) {
-          setUser(userData);
-          localStorage.setItem("user", JSON.stringify(userData));
-        } else {
-          console.error("Could not fetch user data from any endpoint");
-          logout();
-        }
-
+        console.log('✅ User session restored from storage:', userData.email);
       } catch (err) {
         console.error("Auth restore failed:", err.message);
-        logout();
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
       }
 
       setLoading(false);
@@ -171,9 +172,11 @@ export const AuthProvider = ({ children }) => {
 
       const { token, user, redirectTo } = res.data;
 
-      // Store token + user
+      // Store token + user in both localStorage and sessionStorage for redundancy
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user", JSON.stringify(user));
 
       setToken(token);
       setUser(user);
@@ -201,8 +204,11 @@ export const AuthProvider = ({ children }) => {
   // 🟢 LOGOUT
   // --------------------------
   const logout = useCallback(() => {
+    // Clear from both storage methods
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     setToken(null);
     setUser(null);

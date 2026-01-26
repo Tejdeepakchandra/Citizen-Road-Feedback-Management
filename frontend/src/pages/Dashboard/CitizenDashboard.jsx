@@ -203,7 +203,10 @@ const CitizenDashboard = () => {
 
   } catch (err) {
     console.error('Failed to fetch dashboard data:', err);
-    setError('Failed to load dashboard data. Please try again later.');
+    const errorMsg = err.response?.data?.message || err.message || 'Failed to load dashboard data';
+    const errorCode = err.response?.status || 'unknown';
+    console.error(`❌ Error ${errorCode}: ${errorMsg}`);
+    setError(`${errorMsg} (Error: ${errorCode})`);
     setMonthlyData([]);
   } finally {
     setLoading(false);
