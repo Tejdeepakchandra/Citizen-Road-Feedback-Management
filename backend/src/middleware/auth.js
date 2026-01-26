@@ -6,6 +6,15 @@ const asyncHandler = require('../utils/asyncHandler');
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;
 
+  // Debug: Log incoming headers
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Auth Check:', {
+      hasAuthHeader: !!req.headers.authorization,
+      hasCookie: !!req.cookies.token,
+      authHeaderPreview: req.headers.authorization ? req.headers.authorization.substring(0, 30) + '...' : 'none'
+    });
+  }
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
