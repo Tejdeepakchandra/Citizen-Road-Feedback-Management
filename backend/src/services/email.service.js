@@ -505,6 +505,18 @@ loadTemplates();
 // Send email function
 exports.sendEmail = async ({ to, subject, template, context = {}, attachments = [] }) => {
   try {
+    // ⚠️ PRODUCTION: Skip email sending on Render free tier (SMTP blocked)
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`📧 [PRODUCTION] Email skipped - Render free tier blocks SMTP`);
+      console.log(`   To: ${to}`);
+      console.log(`   Subject: ${subject}`);
+      console.log(`   Template: ${template}`);
+      return { 
+        messageId: 'SKIPPED_IN_PRODUCTION',
+        message: 'Email skipped in production mode'
+      };
+    }
+
     // Ensure templates are loaded
     if (Object.keys(templates).length === 0) {
       console.log('📧 Templates not loaded yet, loading now...');
