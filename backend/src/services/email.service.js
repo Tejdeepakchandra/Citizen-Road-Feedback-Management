@@ -16,25 +16,36 @@ handlebars.registerHelper('if', function(conditional, options) {
   }
 });
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT === '465',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+// Create transporter - Support both SMTP and SendGrid
+let transporter;
 
-// Verify connection
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error('SMTP connection error:', error);
-  } else {
-    console.log('✅ SMTP server is ready');
-  }
-});
+if (process.env.SENDGRID_API_KEY) {
+  // Use SendGrid for production
+  const sgMail = require('@sendgrid/mail');
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  transporter = { useSendGrid: true, client: sgMail };
+  console.log('✅ SendGrid configured for email sending');
+} else {
+  // Use SMTP fallback
+  transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_PORT === '465',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+  
+  // Verify connection
+  transporter.verify(function (error, success) {
+    if (error) {
+      console.error('❌ SMTP connection error:', error);
+    } else {
+      console.log('✅ SMTP server is ready');
+    }
+  });
+}
 
 // Load email templates
 const templates = {};
@@ -555,12 +566,39 @@ exports.sendEmail = async ({ to, subject, template, context = {}, attachments = 
     console.log(`📧 Using template: ${template}`);
     console.log(`📧 Subject: ${subject}`);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent to ${to}: ${info.messageId}`);
-    return info;
+    // Use SendGrid if configured, otherwise use SMTP
+    if (transporter.useSendGrid) {
+      const msg = {
+        to: Array.isArray(to) ? to[0] : to,
+        from: process.env.FROM_EMAIL || 'noreply@smartroad.com',
+        subject,
+        html,
+        attachments: attachments.map(att => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType
+        }))
+      };
+
+      const result = await transporter.client.send(msg);
+      console.log(`✅ Email sent via SendGrid to ${to}: ${result[0]?.messageId}`);
+      return { 
+        messageId: result[0]?.messageId || 'SENT',
+        success: true
+      };
+    } else {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Email sent to ${to}: ${info.messageId}`);
+      return info;
+    }
   } catch (error) {
     console.error(`❌ Error sending email to ${to}:`, error);
-    throw error;
+    // Log but don't throw - email failures shouldn't block operations
+    return { 
+      messageId: 'ERROR',
+      error: error.message,
+      success: false
+    };
   }
 };
 

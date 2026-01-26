@@ -10,6 +10,7 @@
     "seed": "node seeds/admin.seed.js && node seeds/staff.seed.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.40.0",
