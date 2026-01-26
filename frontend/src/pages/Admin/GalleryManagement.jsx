@@ -932,6 +932,7 @@ const GalleryListItem = ({ item, onView, onFeatureToggle, onMenuOpen, onMenuClos
 const GalleryDetailDialog = ({ open, onClose, item, onFeatureToggle, onDelete }) => {
   // Add null checks for item and its properties
   if (!item) return null;
+  const theme = useTheme();
 
   const beforeImage = item.beforeImage || {};
   const afterImage = item.afterImage || {};
@@ -1014,7 +1015,13 @@ const GalleryDetailDialog = ({ open, onClose, item, onFeatureToggle, onDelete })
                 </Box>
               )}
             </Box>
-            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+            <Box sx={{ p: 2, bgcolor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.06)'   // dark glass
+        : 'grey.100',    borderRadius: 2 ,borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.15)'
+        : 'grey.300', borderWidth: 1, borderStyle: 'solid' }}>
               <Typography variant="subtitle2" gutterBottom>Before Details:</Typography>
               <Typography variant="body2">Caption: {beforeImage.caption || 'No caption'}</Typography>
               <Typography variant="body2">
@@ -1068,7 +1075,13 @@ const GalleryDetailDialog = ({ open, onClose, item, onFeatureToggle, onDelete })
                 </Box>
               )}
             </Box>
-            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+            <Box sx={{  p: 2, bgcolor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.06)'   // dark glass
+        : 'grey.100',    borderRadius: 2 ,borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.15)'
+        : 'grey.300', borderWidth: 1, borderStyle: 'solid' }}>
               <Typography variant="subtitle2" gutterBottom>After Details:</Typography>
               <Typography variant="body2">Caption: {afterImage.caption || 'No caption'}</Typography>
               <Typography variant="body2">

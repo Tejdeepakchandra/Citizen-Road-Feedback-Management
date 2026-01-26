@@ -20,6 +20,7 @@ import {
   CircularProgress,
   Chip,
   Rating,
+  Refresh,
 } from '@mui/material';
 import {
   Person,
@@ -37,7 +38,8 @@ import {
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { reportAPI } from '../../services/api'; // Adjust path as needed
+import { reportAPI } from '../../services/api';
+import { toast } from 'react-hot-toast';
 
 
 const ProfilePage = () => {
@@ -45,7 +47,6 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activityLoading, setActivityLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [reports, setReports] = useState([]);
   const [donations, setDonations] = useState([]);
@@ -71,65 +72,53 @@ const ProfilePage = () => {
         state: user.state || '',
         pincode: user.pincode || '',
       });
+      // Fetch data immediately when user is available
       fetchUserData();
     }
-  }, [user]);
+  }, [user?.id, user?._id]);
 
   const fetchUserData = async () => {
-    if (!user?._id) return;
-    
     try {
-      setActivityLoading(true);
+      setLoading(true);
+      console.log('Fetching user data...');
       
-      // Fetch reports - using the same endpoint as MyReports.jsx
+      // Fetch reports
       try {
-      console.log("Fetching reports with reportAPI.getMyReports()");
-      const reportsRes = await reportAPI.getMyReports();
-      console.log("Reports API response:", reportsRes);
-      
-      // Check different response structures
-      if (reportsRes.data?.data) {
-        setReports(reportsRes.data.data);
-      } else if (Array.isArray(reportsRes.data)) {
-        setReports(reportsRes.data);
-      } else if (reportsRes.data?.reports) {
-        setReports(reportsRes.data.reports);
-      } else {
-        console.log("Unexpected reports response structure:", reportsRes.data);
+        const reportsRes = await reportAPI.getMyReports();
+        console.log('Reports:', reportsRes);
+        const reportsData = reportsRes.data?.data || reportsRes.data || [];
+        setReports(Array.isArray(reportsData) ? reportsData : []);
+      } catch (error) {
+        console.error('Failed to fetch reports:', error.message);
         setReports([]);
       }
       
-    } catch (error) {
-      console.log('Failed to fetch reports:', error);
-      console.log('Error config:', error.config);
-      console.log('Error response:', error.response?.data);
-      setReports([]);
-    }
-      
-      // Fetch donations - using the same endpoint as DonorWall.jsx
+      // Fetch donations
       try {
         const donationsRes = await api.get('/donations/my');
-        console.log('Donations response:', donationsRes.data);
-        setDonations(donationsRes.data?.data || []);
+        console.log('Donations:', donationsRes);
+        const donationsData = donationsRes.data?.data || donationsRes.data || [];
+        setDonations(Array.isArray(donationsData) ? donationsData : []);
       } catch (error) {
-        console.log('Failed to fetch donations:', error);
+        console.error('Failed to fetch donations:', error.message);
         setDonations([]);
       }
       
-      // Fetch feedback - using the same endpoint as FeedbackList.jsx
+      // Fetch feedback
       try {
         const feedbackRes = await api.get('/feedback/my');
-        console.log('Feedback response:', feedbackRes.data);
-        setFeedbacks(feedbackRes.data?.data || []);
+        console.log('Feedback:', feedbackRes);
+        const feedbackData = feedbackRes.data?.data || feedbackRes.data || [];
+        setFeedbacks(Array.isArray(feedbackData) ? feedbackData : []);
       } catch (error) {
-        console.log('Failed to fetch feedback:', error);
+        console.error('Failed to fetch feedback:', error.message);
         setFeedbacks([]);
       }
       
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      console.error('Error in fetchUserData:', error);
     } finally {
-      setActivityLoading(false);
+      setLoading(false);
     }
   };
 
@@ -263,12 +252,24 @@ const ProfilePage = () => {
 
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            My Profile
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage your personal information and activity
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                My Profile
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Manage your personal information and activity
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={fetchUserData}
+              disabled={loading}
+            >
+              Refresh
+            </Button>
+          </Box>
         </Box>
 
         <Grid container spacing={4}>
@@ -504,11 +505,7 @@ const ProfilePage = () => {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       Recent Activity
                     </Typography>
-                    {activityLoading ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                        <CircularProgress />
-                      </Box>
-                    ) : recentActivity.length > 0 ? (
+                    {recentActivity.length > 0 ? (
                       <Box>
                         {recentActivity.map((item, index) => (
                           <Card key={index} sx={{ mb: 2, p: 2, borderLeft: '4px solid', 
@@ -593,9 +590,7 @@ const ProfilePage = () => {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       Your Reports ({reports.length})
                     </Typography>
-                    {activityLoading ? (
-                      <CircularProgress />
-                    ) : reports.length > 0 ? (
+                    {reports.length > 0 ? (
                       <Box>
                         {reports.slice(0, 5).map((report, index) => (
                           <Card key={report._id || index} sx={{ mb: 2, p: 2 }}>
@@ -668,9 +663,7 @@ const ProfilePage = () => {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       Your Donations ({donations.length})
                     </Typography>
-                    {activityLoading ? (
-                      <CircularProgress />
-                    ) : donations.length > 0 ? (
+                    {donations.length > 0 ? (
                       <Box>
                         {donations.slice(0, 5).map((donation, index) => (
                           <Card key={donation._id || index} sx={{ mb: 2, p: 2 }}>
@@ -742,9 +735,7 @@ const ProfilePage = () => {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       Your Feedback ({feedbacks.length})
                     </Typography>
-                    {activityLoading ? (
-                      <CircularProgress />
-                    ) : feedbacks.length > 0 ? (
+                    {feedbacks.length > 0 ? (
                       <Box>
                         {feedbacks.slice(0, 5).map((feedback, index) => (
                           <Card key={feedback._id || index} sx={{ mb: 2, p: 2 }}>

@@ -54,13 +54,14 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { staffAPI } from '../../services/api';
+import api, { staffAPI } from '../../services/api';
 
 const StaffProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   
@@ -99,24 +100,68 @@ const StaffProfilePage = () => {
     'signboard': { icon: <Assessment />, color: '#9C27B0', label: 'Signboard' },
   };
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        department: user.department || '',
-        designation: user.designation || '',
-        employeeId: user.employeeId || '',
-        address: user.address || '',
-      });
-      fetchStaffData();
+  // FIX: Fetch fresh staff profile from backend IMMEDIATELY on page load (independent of context)
+  const fetchStaffProfile = async () => {
+    try {
+      setProfileLoading(true);
+      console.log('fetchStaffProfile: Starting to fetch staff profile...');
+      
+      // Get fresh staff data from backend using /auth/me endpoint
+      const res = await api.get('/auth/me');
+      console.log('fetchStaffProfile: /auth/me response:', res);
+      
+      // Extract user data from response - handle multiple response formats
+      let freshUser;
+      if (res?.data?.data) {
+        freshUser = res.data.data;
+      } else if (res?.data?.user) {
+        freshUser = res.data.user;
+      } else if (res?.data) {
+        freshUser = res.data;
+      }
+      
+      console.log('fetchStaffProfile: Extracted freshUser:', freshUser);
+      
+      if (freshUser && freshUser._id) {
+        // Update auth context with fresh data
+        updateUser(freshUser);
+        console.log('fetchStaffProfile: Updated user context');
+        
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify(freshUser));
+        console.log('fetchStaffProfile: Updated localStorage');
+        
+        // Update form data with complete profile
+        const newFormData = {
+          name: freshUser.name || '',
+          email: freshUser.email || '',
+          phone: freshUser.phone || '',
+          department: freshUser.department || '',
+          designation: freshUser.designation || '',
+          employeeId: freshUser.employeeId || '',
+          address: freshUser.address || '',
+        };
+        
+        setFormData(newFormData);
+      } else {
+        console.warn('fetchStaffProfile: No valid user data received');
+      }
+    } catch (err) {
+      console.error('fetchStaffProfile: Error fetching staff profile:', err);
+      console.error('fetchStaffProfile: Error details:', err.response?.data || err.message);
+    } finally {
+      setProfileLoading(false);
     }
-  }, [user]);
+  };
+
+  // FIX: Fetch fresh staff profile IMMEDIATELY on component mount (no dependency on context)
+  useEffect(() => {
+    // Fetch staff profile and data right away
+    fetchStaffProfile();
+    fetchStaffData();
+  }, []);
 
   const fetchStaffData = async () => {
-    if (!user?._id) return;
-    
     try {
       setDataLoading(true);
       
@@ -193,8 +238,14 @@ const StaffProfilePage = () => {
     }));
   };
 
+  // FIX: Fetch data when tab changes (for Work Stats and Assigned Tasks tabs)
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    
+    // Fetch task-related data when switching to tabs 1 (Work Stats) or 2 (Assigned Tasks)
+    if ([1, 2].includes(newValue)) {
+      fetchStaffData();
+    }
   };
 
   const handleInputChange = (e) => {
@@ -357,11 +408,14 @@ const StaffProfilePage = () => {
     });
   };
 
-  if (!user) {
+  if (profileLoading || !user) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress />
+          <Box sx={{ textAlign: 'center' }}>
+            <CircularProgress sx={{ mb: 2 }} />
+            <Typography>Loading profile...</Typography>
+          </Box>
         </Box>
       </Container>
     );
@@ -651,12 +705,7 @@ const StaffProfilePage = () => {
                       Performance Statistics
                     </Typography>
                     
-                    {dataLoading ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                        <CircularProgress />
-                      </Box>
-                    ) : (
-                      <>
+                    <>
                         <Grid container spacing={2} sx={{ mb: 3 }}>
                           {[
                             { label: 'Total Tasks', value: stats.total, color: '#1976D2', icon: <Assignment /> },
@@ -714,8 +763,7 @@ const StaffProfilePage = () => {
                           </Grid>
                         </Grid>
                       </>
-                    )}
-                  </Box>
+                    </Box>
                 )}
 
                 {/* Assigned Tasks Tab */}
@@ -734,9 +782,7 @@ const StaffProfilePage = () => {
                       </Button>
                     </Box>
 
-                    {dataLoading ? (
-                      <CircularProgress />
-                    ) : tasks.length > 0 ? (
+                    {tasks.length > 0 ? (
                       <>
                         <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400, overflow: 'auto' }}>
                           <Table size="small" stickyHeader>

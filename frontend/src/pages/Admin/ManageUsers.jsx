@@ -927,8 +927,9 @@ const createRealisticActivity = (stats, user) => {
                 startIcon={<PersonAdd />}
                 onClick={() => setCreateDialogOpen(true)}
                 sx={{
-                  background:
-                    "linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)",
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #818CF8 0%, #38BDF8 100%)'
+                    : 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
                 }}
               >
                 Add New User
@@ -1866,10 +1867,10 @@ const createRealisticActivity = (stats, user) => {
                                   sx={{
                                     bgcolor:
                                       activity.type === "report"
-                                        ? "#4CAF50"
+                                        ? theme.palette.success.main
                                         : activity.type === "donation"
-                                        ? "#2196F3"
-                                        : "#FF9800",
+                                        ? theme.palette.primary.main
+                                        : theme.palette.warning.main,
                                     width: 40,
                                     height: 40,
                                   }}

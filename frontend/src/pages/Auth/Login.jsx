@@ -124,39 +124,63 @@ const Login = () => {
           transition={{ duration: 0.5 }}
           style={{ width: '100%' }}
         >
-          <Card sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: theme.shadows[8] }}>
-            <CardContent sx={{ p: 4 }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              overflow: 'hidden',
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 20px 60px rgba(0, 0, 0, 0.5)'
+                : '0 20px 60px rgba(0, 0, 0, 0.1)',
+              border: theme.palette.mode === 'dark'
+                ? '1px solid rgba(255, 255, 255, 0.1)'
+                : '1px solid rgba(255, 255, 255, 0.2)',
+              background: theme.palette.mode === 'dark'
+                ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`
+                : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              bgcolor: theme.palette.background.paper,
+            }}
+          >
+            <CardContent sx={{ p: 5 }}>
               {/* Logo */}
-              <Box sx={{ textAlign: 'center', mb: 4 }}>
-                <Box
+              <Box sx={{ textAlign: 'center', mb: 5 }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <Box
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: 2.5,
+                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      boxShadow: '0 8px 24px rgba(37, 99, 235, 0.3)',
+                    }}
+                  >
+                    <Lock sx={{ color: '#fff', fontSize: 36 }} />
+                  </Box>
+                </motion.div>
+                <Typography
+                  variant="h4"
+                  fontWeight={800}
+                  gutterBottom
                   sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 2,
                     background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 2,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  <Lock sx={{ color: '#fff', fontSize: 32 }} />
-                </Box>
-                <Typography variant="h4" fontWeight={800} gutterBottom>
                   Welcome Back
                 </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Sign in to your RoadCare account
+                <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
+                  Sign in to your RoadCare account and make a difference
                 </Typography>
               </Box>
-
-              {/* Info Message */}
-              <Alert severity="info" sx={{ mb: 3 }}>
-                <Typography variant="body2">
-                  Use your registered email to login. System will automatically detect your role (Citizen/Staff/Admin) and redirect accordingly.
-                </Typography>
-              </Alert>
 
               {errors.submit && (
                 <Alert severity="error" sx={{ mb: 3 }}>
@@ -176,10 +200,34 @@ const Login = () => {
                   error={!!errors.email}
                   helperText={errors.email}
                   margin="normal"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 1.5,
+                      color: theme.palette.text.primary,
+                      '& fieldset': {
+                        borderColor: theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.2)'
+                          : 'rgba(0, 0, 0, 0.2)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: theme.palette.text.primary,
+                    },
+                    '& .MuiInputAdornment-root': {
+                      color: theme.palette.text.secondary,
+                    },
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email />
+                        <Email sx={{ color: theme.palette.primary.main }} />
                       </InputAdornment>
                     ),
                   }}
@@ -196,10 +244,34 @@ const Login = () => {
                   error={!!errors.password}
                   helperText={errors.password}
                   margin="normal"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 1.5,
+                      color: theme.palette.text.primary,
+                      '& fieldset': {
+                        borderColor: theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.2)'
+                          : 'rgba(0, 0, 0, 0.2)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: theme.palette.text.primary,
+                    },
+                    '& .MuiInputAdornment-root': {
+                      color: theme.palette.text.secondary,
+                    },
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock />
+                        <Lock sx={{ color: theme.palette.primary.main }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -216,13 +288,19 @@ const Login = () => {
                   disabled={loading}
                 />
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, mt: 2 }}>
                   <Link
                     component={RouterLink}
                     to="/forgot-password"
                     variant="body2"
                     color="primary"
                     underline="hover"
+                    sx={{
+                      transition: 'color 0.3s ease',
+                      '&:hover': {
+                        color: 'primary.dark',
+                      },
+                    }}
                   >
                     Forgot password?
                   </Link>
@@ -232,6 +310,12 @@ const Login = () => {
                     variant="body2"
                     color="primary"
                     underline="hover"
+                    sx={{
+                      transition: 'color 0.3s ease',
+                      '&:hover': {
+                        color: 'primary.dark',
+                      },
+                    }}
                   >
                     Create new account
                   </Link>
@@ -244,11 +328,22 @@ const Login = () => {
                   size="large"
                   disabled={loading}
                   sx={{
-                    py: 1.5,
-                    mb: 3,
+                    py: 1.75,
+                    mb: 2,
+                    borderRadius: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
                     background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                    boxShadow: '0 8px 24px rgba(37, 99, 235, 0.3)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
                       background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)',
+                      boxShadow: '0 12px 32px rgba(37, 99, 235, 0.4)',
+                      transform: 'translateY(-2px)',
+                    },
+                    '&:disabled': {
+                      background: 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)',
                     },
                   }}
                 >
@@ -256,119 +351,83 @@ const Login = () => {
                 </Button>
               </form>
 
-              <Divider sx={{ my: 3 }}>
-                <Typography variant="body2" color="text.secondary">
-                  OR CONTINUE WITH
-                </Typography>
-              </Divider>
 
-              {/* Social Login */}
-              <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Google />}
-                  disabled={loading}
-                  sx={{ py: 1.5 }}
-                >
-                  Google
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<GitHub />}
-                  disabled={loading}
-                  sx={{ py: 1.5 }}
-                >
-                  GitHub
-                </Button>
-              </Box>
-
-              {/* Role-based Information */}
-              <Box sx={{ mt: 4, p: 2, bgcolor: theme.palette.grey[50], borderRadius: 2 }}>
-                <Typography variant="body2" fontWeight={600} gutterBottom>
-                  Role-based Access:
-                </Typography>
-                <Grid container spacing={1}>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          bgcolor: theme.palette.success.main,
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Citizens:</strong> Report issues, track progress, make donations
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          bgcolor: theme.palette.warning.main,
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Staff:</strong> Manage assigned issues, update status
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          bgcolor: theme.palette.error.main,
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Admins:</strong> Full system access, user management, analytics
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
             </CardContent>
           </Card>
 
           {/* Features */}
           <Box sx={{ mt: 6 }}>
-            <Typography variant="h6" fontWeight={600} textAlign="center" gutterBottom>
-              Why join RoadCare?
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              textAlign="center"
+              gutterBottom
+              sx={{
+                fontSize: '1.25rem',
+                mb: 3,
+                color: theme.palette.text.primary,
+              }}
+            >
+              Transform Your Community with RoadCare
             </Typography>
-            <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid container spacing={2.5} sx={{ mt: 1 }}>
               {[
-                'Report road issues instantly',
-                'Track resolution progress in real-time',
-                'View before/after transformations',
-                'Make donations for road development',
-                'Join a community of proactive citizens',
-              ].map((feature, index) => (
+                { title: 'Report Issues', desc: 'Instantly report road problems with photos and location' },
+                { title: 'Real-time Updates', desc: 'Track resolution progress as it happens' },
+                { title: 'Community Impact', desc: 'See before/after transformations of your city' },
+                { title: 'Support Growth', desc: 'Contribute through donations for infrastructure' },
+              ].map((item, index) => (
                 <Grid item xs={12} sm={6} key={index}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      background: theme.palette.mode === 'dark'
+                        ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.action.hover} 100%)`
+                        : 'linear-gradient(135deg, #f5f7fa 0%, #f0f4ff 100%)',
+                      border: theme.palette.mode === 'dark'
+                        ? `1px solid ${theme.palette.divider}`
+                        : '1px solid #e5e9f2',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: theme.shadows[4],
+                        border: `1px solid ${theme.palette.primary.main}`,
+                      },
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 2,
+                    }}
+                  >
                     <Box
                       sx={{
-                        width: 24,
-                        height: 24,
+                        width: 32,
+                        height: 32,
                         borderRadius: '50%',
-                        backgroundColor: theme.palette.success.main + '20',
+                        backgroundColor: theme.palette.primary.main + '20',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        flexShrink: 0,
                       }}
                     >
-                      <Check sx={{ fontSize: 16, color: theme.palette.success.main }} />
+                      <Check sx={{ fontSize: 18, color: theme.palette.primary.main }} />
                     </Box>
-                    <Typography variant="body2">{feature}</Typography>
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={600}
+                        sx={{ mb: 0.5, color: theme.palette.text.primary }}
+                      >
+                        {item.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {item.desc}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Grid>
               ))}

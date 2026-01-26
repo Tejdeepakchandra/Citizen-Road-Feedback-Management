@@ -74,11 +74,20 @@ export const useNotifications = () => {
     
     try {
       const response = await notificationAPI.getNotifications();
-      setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unreadCount || 0);
+      // API returns data.data as array and data.unreadCount at top level
+      const notificationsData = response.data?.data || [];
+      const unreadCountData = response.data?.unreadCount || 0;
+      
+      setNotifications(notificationsData);
+      setUnreadCount(unreadCountData);
+      
+      console.log('✅ Notifications loaded:', {
+        count: notificationsData.length,
+        unreadCount: unreadCountData
+      });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load notifications');
-      console.error('Error fetching notifications:', err);
+      console.error('❌ Error fetching notifications:', err);
     } finally {
       setLoading(false);
     }

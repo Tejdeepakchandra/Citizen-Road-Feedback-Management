@@ -20,9 +20,10 @@ import {
   AccountBalance,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import DonationForm from '../../components/donations/DonationForm';
-import DonorWall from '../../components/donations/DonorWall';
-import { donationAPI } from '../../services/api';
+import DonationForm from '../../../components/donations/DonationForm';
+import DonorWall from '../../../components/donations/DonorWall';
+import { donationAPI } from '../../../services/api';
+import { useSocket } from '../../../hooks/useSocket';
 
 const DonatePage = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -36,10 +37,72 @@ const DonatePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const theme = useTheme();
+  const { socket, isConnected } = useSocket();
 
+  // Fetch donation stats from backend
   useEffect(() => {
     fetchDonationStats();
   }, []);
+
+  // Listen for real-time donation updates via Socket.IO
+  useEffect(() => {
+    if (!socket || !isConnected) {
+      console.warn('⚠️ DonatePage: Socket not connected yet');
+      return;
+    }
+
+    console.log('🔌 DonatePage: Setting up socket listeners...');
+
+    // Define handler functions with comprehensive logging
+    const handleDonationCompleted = (donationData) => {
+      console.log('🎯 DonatePage: donation_completed event received:', donationData);
+      setTimeout(() => {
+        console.log('🔄 DonatePage: Fetching updated stats...');
+        fetchDonationStats();
+        toast.success('New donation received! Funds updated.');
+      }, 300);
+    };
+
+    const handleDonationReceived = (data) => {
+      console.log('🎯 DonatePage: donation_received event received:', data);
+      setTimeout(() => {
+        fetchDonationStats();
+        toast.success(`New donation of ₹${data.amount}!`);
+      }, 300);
+    };
+
+    const handleDonationNotification = (data) => {
+      console.log('🎯 DonatePage: donation_notification event received:', data);
+      setTimeout(() => {
+        fetchDonationStats();
+        toast.success(data.message || 'Your donation was successful!');
+      }, 300);
+    };
+
+    const handleDonationUpdate = (data) => {
+      console.log('🎯 DonatePage: donation_update broadcast received:', data);
+      setTimeout(() => {
+        fetchDonationStats();
+      }, 300);
+    };
+
+    // Attach listeners
+    socket.on('donation_completed', handleDonationCompleted);
+    socket.on('donation_received', handleDonationReceived);
+    socket.on('donation_notification', handleDonationNotification);
+    socket.on('donation_update', handleDonationUpdate);
+
+    console.log('✅ DonatePage: All socket listeners attached');
+
+    // Cleanup listeners on unmount
+    return () => {
+      console.log('🧹 DonatePage: Removing socket listeners');
+      socket.off('donation_completed', handleDonationCompleted);
+      socket.off('donation_received', handleDonationReceived);
+      socket.off('donation_notification', handleDonationNotification);
+      socket.off('donation_update', handleDonationUpdate);
+    };
+  }, [socket, isConnected]);
 
   const fetchDonationStats = async () => {
     setLoading(true);
@@ -407,7 +470,9 @@ const DonatePage = () => {
             mt: 8,
             p: 6,
             borderRadius: 3,
-            background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #818CF8 0%, #38BDF8 100%)'
+              : 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
             color: '#fff',
             textAlign: 'center',
           }}
@@ -429,7 +494,7 @@ const DonatePage = () => {
                 px: 4,
                 py: 1.5,
                 '&:hover': {
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: theme.palette.mode === 'dark' ? '#f1f5f9' : '#f8fafc',
                 },
               }}
             >

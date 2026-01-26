@@ -15,6 +15,7 @@ import {
   Grid,
   InputAdornment,
   Chip,
+  useTheme,
 } from '@mui/material';
 import { 
   ArrowBack,
@@ -24,10 +25,10 @@ import {
   Category,
   PriorityHigh,
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
-import { reportAPI } from '../../services/api';
+import { useAuth } from '../../../context/AuthContext';
+import { reportAPI } from '../../../services/api';
 import { toast } from 'react-hot-toast';
-import MapPicker from '../../components/common/MapPicker';
+import MapPicker from '../../../components/common/MapPicker';
 
 const categories = [
   { value: 'pothole', label: 'Pothole', icon: '🕳️' },
@@ -48,6 +49,7 @@ const severities = [
 const NewReport = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -425,7 +427,9 @@ const NewReport = () => {
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CloudUpload />}
                     sx={{
-                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                      background: theme => theme.palette.mode === 'dark' 
+                        ? 'linear-gradient(135deg, #818CF8 0%, #38BDF8 100%)'
+                        : 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
                       minWidth: 150,
                     }}
                   >

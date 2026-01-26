@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Submitted Successfully</title>
     <style>
-        body {
+        body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 0 auto; 
             padding: 20px;
             background-color: #f9f9f9;
         }
@@ -21,31 +21,33 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+            border-radius: 10px 10px 0 0; 
         }
         .header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 24px;
         }
-        .content {
-            padding: 40px 30px;
+        .content { 
+            padding: 30px; 
+            background: #f9f9f9; 
+            border-radius: 0 0 10px 10px; 
         }
-        .report-details {
-            background-color: #f0fff4;
-            border-left: 4px solid #48bb78;
-            border-radius: 6px;
-            padding: 25px;
-            margin: 30px 0;
+        .report-details { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 5px; 
+            border-left: 4px solid #4CAF50; 
+            margin: 20px 0; 
         }
         .detail-row {
             display: flex;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
         }
         .detail-row:last-child {
             border-bottom: none;
@@ -54,203 +56,175 @@
         }
         .detail-label {
             font-weight: 600;
-            color: #4a5568;
-            width: 140px;
+            color: #555;
+            width: 150px;
             flex-shrink: 0;
         }
         .detail-value {
-            color: #2d3748;
+            color: #222;
             flex: 1;
         }
         .status-badge {
             display: inline-block;
-            background-color: #c6f6d5;
-            color: #22543d;
+            background: #e8f5e9;
+            color: #2e7d32;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
         }
-        .next-steps {
-            background-color: #ebf8ff;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 30px 0;
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px solid #ddd; 
+            color: #666; 
+            font-size: 12px; 
         }
-        .next-steps h3 {
-            color: #2c5282;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        .step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .step-number {
-            background-color: #4299e1;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            flex-shrink: 0;
-            font-weight: 600;
-        }
-        .step-content {
-            flex: 1;
-        }
-        .step-content p {
-            margin: 5px 0 0;
-            color: #4a5568;
-        }
-        .cta-button {
+        .button {
             display: inline-block;
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            background: #4CAF50;
             color: white;
             text-decoration: none;
-            padding: 14px 32px;
-            border-radius: 6px;
+            padding: 12px 25px;
+            border-radius: 5px;
             font-weight: 600;
-            font-size: 16px;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(72, 187, 120, 0.2);
+            margin: 15px 0;
         }
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 7px 14px rgba(72, 187, 120, 0.25);
-        }
-        .divider {
-            height: 1px;
-            background-color: #e2e8f0;
-            margin: 30px 0;
-        }
-        .footer {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #718096;
-            font-size: 14px;
-        }
-        .contact-info {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #4a5568;
-        }
-        .contact-info a {
-            color: #4299e1;
-            text-decoration: none;
+        .description-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+            margin: 15px 0;
+            font-style: italic;
         }
         .category-icon {
-            font-size: 20px;
-            margin-right: 8px;
-            vertical-align: middle;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Report Submitted Successfully!</h1>
-            <p>Thank you for helping improve our roads</p>
+            <h1>🚧 Report Submitted Successfully!</h1>
+            <p>Thank you for helping improve road safety</p>
         </div>
         
         <div class="content">
             <p>Hello <strong>{{name}}</strong>,</p>
-            <p>Your road issue report has been received and added to our system. We appreciate you taking the time to help make our community safer.</p>
+            <p>Your road issue report has been successfully submitted and is now under review by our team.</p>
             
             <div class="report-details">
+                <h3 style="margin-top: 0; color: #2e7d32;">📋 Report Details:</h3>
+                
                 <div class="detail-row">
                     <div class="detail-label">Report ID:</div>
                     <div class="detail-value"><strong>#{{reportId}}</strong></div>
                 </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Title:</div>
+                    <div class="detail-value">{{title}}</div>
+                </div>
+                
                 <div class="detail-row">
                     <div class="detail-label">Category:</div>
                     <div class="detail-value">
-                        <span class="category-icon">
-                            {{#if category 'pothole'}}🕳️{{/if}}
-                            {{#if category 'drainage'}}💧{{/if}}
-                            {{#if category 'lighting'}}💡{{/if}}
-                            {{#if category 'garbage'}}🗑️{{/if}}
-                            {{#if category 'signage'}}🪧{{/if}}
-                            {{#if category 'other'}}📝{{/if}}
-                        </span>
-                        {{category}}
+                        {{#ifEquals category "pothole"}}<span class="category-icon">🕳️</span> Pothole{{/ifEquals}}
+                        {{#ifEquals category "drainage"}}<span class="category-icon">💧</span> Drainage{{/ifEquals}}
+                        {{#ifEquals category "lighting"}}<span class="category-icon">💡</span> Street Lighting{{/ifEquals}}
+                        {{#ifEquals category "garbage"}}<span class="category-icon">🗑️</span> Garbage{{/ifEquals}}
+                        {{#ifEquals category "signage"}}<span class="category-icon">🪧</span> Road Signage{{/ifEquals}}
+                        {{#ifEquals category "other"}}<span class="category-icon">📝</span> Other Issue{{/ifEquals}}
+                        {{#unless category}}Not specified{{/unless}}
                     </div>
                 </div>
+                
                 <div class="detail-row">
-                    <div class="detail-label">Date Submitted:</div>
+                    <div class="detail-label">Severity:</div>
+                    <div class="detail-value">
+                        {{#ifEquals severity "high"}}🔴 High{{/ifEquals}}
+                        {{#ifEquals severity "medium"}}🟡 Medium{{/ifEquals}}
+                        {{#ifEquals severity "low"}}🟢 Low{{/ifEquals}}
+                        {{#unless severity}}Medium{{/unless}}
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Location:</div>
+                    <div class="detail-value">{{address}}</div>
+                </div>
+                
+                {{#if landmark}}
+                <div class="detail-row">
+                    <div class="detail-label">Landmark:</div>
+                    <div class="detail-value">{{landmark}}</div>
+                </div>
+                {{/if}}
+                
+                {{#if ward}}
+                <div class="detail-row">
+                    <div class="detail-label">Ward:</div>
+                    <div class="detail-value">{{ward}}</div>
+                </div>
+                {{/if}}
+                
+                {{#if zone}}
+                <div class="detail-row">
+                    <div class="detail-label">Zone:</div>
+                    <div class="detail-value">{{zone}}</div>
+                </div>
+                {{/if}}
+                
+                <div class="detail-row">
+                    <div class="detail-label">Submitted on:</div>
                     <div class="detail-value">{{date}}</div>
                 </div>
+                
                 <div class="detail-row">
-                    <div class="detail-label">Current Status:</div>
+                    <div class="detail-label">Status:</div>
                     <div class="detail-value">
-                        <span class="status-badge">Pending Review</span>
+                        <span class="status-badge">⏳ Pending Review</span>
                     </div>
                 </div>
             </div>
             
-            <div class="next-steps">
-                <h3>What Happens Next?</h3>
-                
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <strong>Review & Assessment</strong>
-                        <p>Our team will review your report within 24 hours and assess the priority based on severity and location.</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <strong>Assignment</strong>
-                        <p>If approved, the report will be assigned to the appropriate staff member specialized in {{category}} repairs.</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <strong>Progress Updates</strong>
-                        <p>You'll receive regular updates on the work progress, including photos and status changes.</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <strong>Completion & Feedback</strong>
-                        <p>Once completed, you'll be notified and invited to provide feedback on the work done.</p>
-                    </div>
-                </div>
+            {{#if description}}
+            <div class="description-box">
+                <strong>Your Description:</strong><br>
+                "{{description}}"
+            </div>
+            {{/if}}
+            
+            <p><strong>📅 What happens next?</strong></p>
+            <ul>
+                <li>Our team will review your report within <strong>24 hours</strong></li>
+                <li>You'll receive updates on status changes</li>
+                <li>Once approved, it will be assigned to the appropriate department</li>
+                <li>You can track progress in your dashboard</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 25px 0;">
+                <a href="{{appUrl}}/dashboard/reports/{{reportId}}" class="button">
+                    🚀 Track Your Report
+                </a>
             </div>
             
-            <div style="text-align: center;">
-                <a href="{{appUrl}}/reports/{{reportId}}" class="cta-button">Track Your Report</a>
-            </div>
+            <p>Need to add more details or images? <br>
+            Reply to this email or visit your report page to add updates.</p>
             
-            <div class="divider"></div>
+            <p>Thank you for being a responsible citizen and helping make our roads safer! 🛣️</p>
             
-            <p><strong>Estimated Timeline:</strong></p>
-            <p>• Review: Within 24 hours</p>
-            <p>• Assignment: 1-2 business days</p>
-            <p>• Resolution: Depends on issue complexity</p>
-            
-            <div class="contact-info">
-                <p><strong>Need to update your report?</strong></p>
-                <p>If you need to provide additional information or photos, please reply to this email or visit your report page.</p>
-                <p>Email: <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></p>
-            </div>
+            <p>Best regards,<br>
+            <strong>The Smart Road Management Team</strong><br>
+            <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></p>
         </div>
         
         <div class="footer">
-            <p>&copy; {{year}} Smart Road Management. All rights reserved.</p>
+            <p>© {{year}} {{appName}}. All rights reserved.</p>
             <p>This is an automated message. Please do not reply to this email.</p>
+            <p>Report ID: #{{reportId}}</p>
         </div>
     </div>
 </body>

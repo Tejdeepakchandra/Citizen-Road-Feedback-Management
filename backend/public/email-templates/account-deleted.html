@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deleted</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #757575 0%, #616161 100%); 
+            color: white; 
+            padding: 40px 30px; 
+            text-align: center; 
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content { 
+            padding: 40px 30px; 
+        }
+        .greeting {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .info-box {
+            background: #f5f5f5;
+            border-left: 4px solid #757575;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 25px 0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #424242;
+            font-size: 16px;
+        }
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #222;
+            flex: 1;
+        }
+        .what-happens {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 25px 0;
+        }
+        .what-happens h3 {
+            margin-top: 0;
+            color: #1565c0;
+            font-size: 16px;
+        }
+        .what-happens ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .what-happens li {
+            margin: 8px 0;
+            color: #333;
+        }
+        .recovery-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 25px 0;
+        }
+        .recovery-box h3 {
+            margin-top: 0;
+            color: #e65100;
+            font-size: 16px;
+        }
+        .recovery-box p {
+            margin: 10px 0;
+            color: #333;
+        }
+        .button-group {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .button {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 0 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background: #0b7dda;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 12px;
+        }
+        .footer-link {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        .farewell {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👋 Account Deleted</h1>
+        </div>
+        <div class="content">
+            <p class="greeting">Hello {{name}},</p>
+            
+            <p>We're sorry to see you go. Your account has been successfully deleted on {{date}}.</p>
+            
+            <div class="info-box">
+                <h3>📋 Deletion Details</h3>
+                <div class="info-row">
+                    <div class="info-label">Deleted:</div>
+                    <div class="info-value">{{date}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Status:</div>
+                    <div class="info-value">Account Inactive</div>
+                </div>
+            </div>
+            
+            <div class="what-happens">
+                <h3>❓ What Happens Now</h3>
+                <ul>
+                    <li>Your account is now inactive and inaccessible</li>
+                    <li>All your personal data will be removed within 30 days</li>
+                    <li>You will no longer receive any communications from us</li>
+                    <li>Your reports and contributions will be anonymized</li>
+                    <li>Your email address may be used for account recovery only</li>
+                </ul>
+            </div>
+            
+            <div class="recovery-box">
+                <h3>🔄 Can You Recover Your Account?</h3>
+                <p>Yes! You can recover your account within 30 days of deletion. After 30 days, your account and all associated data will be permanently deleted and cannot be recovered.</p>
+                <p style="text-align: center;">
+                    <a href="#" class="button">Recover Account</a>
+                </p>
+            </div>
+            
+            <p><strong>We'd love to know why you're leaving:</strong></p>
+            <p>Your feedback helps us improve. If you have any suggestions or encountered any issues, please let us know at <a href="mailto:support@smartroad.com" class="footer-link">support@smartroad.com</a></p>
+            
+            <div class="farewell">
+                <p>Thank you for being part of the Smart Road Management community.</p>
+                <p>Safe travels! 🛣️</p>
+            </div>
+            
+            <p>Best regards,<br><strong>Smart Road Management Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>© {{year}} Smart Road Management. All rights reserved.</p>
+            <p>This is a confirmation email. If you did not delete your account, please <a href="#" class="footer-link">contact support immediately</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

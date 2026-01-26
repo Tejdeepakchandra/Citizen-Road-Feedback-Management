@@ -240,26 +240,26 @@ const StaffDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return '#FFA726'; // Orange
-      case 'assigned': return '#29B6F6'; // Light Blue
-      case 'in_progress': return '#AB47BC'; // Purple
-      case 'completed': return '#66BB6A'; // Green
-      case 'resolved': return '#78909C'; // Blue Grey
-      default: return '#90A4AE'; // Light Blue Grey
+      case 'pending': return theme.palette.warning.main;
+      case 'assigned': return theme.palette.info.main;
+      case 'in_progress': return theme.palette.secondary.main;
+      case 'completed': return theme.palette.success.main;
+      case 'resolved': return theme.palette.grey[500];
+      default: return theme.palette.grey[400];
     }
   };
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
-      case 'high': return <PriorityHigh sx={{ color: '#EF5350' }} />; // Red
-      case 'medium': return <PriorityHigh sx={{ color: '#FFB74D' }} />; // Orange
-      case 'low': return <PriorityHigh sx={{ color: '#81C784' }} />; // Green
-      default: return <Info sx={{ color: '#90A4AE' }} />;
+      case 'high': return <PriorityHigh sx={{ color: theme.palette.error.main }} />;
+      case 'medium': return <PriorityHigh sx={{ color: theme.palette.warning.main }} />;
+      case 'low': return <PriorityHigh sx={{ color: theme.palette.success.main }} />;
+      default: return <Info sx={{ color: theme.palette.grey[500] }} />;
     }
   };
 
   const StatCard = ({ title, value, icon, change, color, onClick, subtitle }) => {
-    const cardColor = color || '#1976D2'; // Navy Blue primary
+    const cardColor = color || theme.palette.primary.main;
     
     return (
       <motion.div
@@ -275,9 +275,11 @@ const StaffDashboard = () => {
             height: '100%',
             borderRadius: 3,
             backdropFilter: 'blur(20px)',
-            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(13, 71, 161, 0.05) 100%)',
-            border: '1px solid rgba(25, 118, 210, 0.2)',
-            boxShadow: '0 8px 32px rgba(13, 71, 161, 0.2)',
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(55, 65, 181, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.08) 100%)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.15)}`,
             position: 'relative',
             overflow: 'hidden',
             '&:hover': {
@@ -316,10 +318,10 @@ const StaffDashboard = () => {
                   label={`${Math.abs(change)}%`}
                   size="small"
                   sx={{
-                    backgroundColor: change > 0 ? alpha('#4CAF50', 0.2) : alpha('#F44336', 0.2),
-                    color: change > 0 ? '#4CAF50' : '#F44336',
+                    backgroundColor: change > 0 ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.error.main, 0.2),
+                    color: change > 0 ? theme.palette.success.main : theme.palette.error.main,
                     fontWeight: 600,
-                    border: `1px solid ${change > 0 ? alpha('#4CAF50', 0.3) : alpha('#F44336', 0.3)}`,
+                    border: `1px solid ${change > 0 ? alpha(theme.palette.success.main, 0.3) : alpha(theme.palette.error.main, 0.3)}`,
                   }}
                 />
               )}
@@ -340,7 +342,7 @@ const StaffDashboard = () => {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: alpha('#E3F2FD', 0.9),
+                color: theme.palette.text.secondary,
                 fontSize: '0.9rem',
                 fontWeight: 500,
               }}
@@ -351,7 +353,7 @@ const StaffDashboard = () => {
               <Typography 
                 variant="caption" 
                 sx={{ 
-                  color: alpha('#BBDEFB', 0.7),
+                  color: theme.palette.text.secondary,
                   display: 'block',
                   mt: 0.5,
                 }}
@@ -367,11 +369,11 @@ const StaffDashboard = () => {
 
   const QuickActionButton = ({ icon, label, onClick, color = 'primary' }) => {
     const buttonColors = {
-      primary: { main: '#1976D2', light: '#42A5F5' },
-      secondary: { main: '#AB47BC', light: '#CE93D8' },
-      warning: { main: '#FFA726', light: '#FFCC80' },
-      success: { main: '#66BB6A', light: '#A5D6A7' },
-      info: { main: '#29B6F6', light: '#81D4FA' },
+      primary: { main: theme.palette.primary.main, light: theme.palette.primary.light },
+      secondary: { main: theme.palette.secondary.main, light: theme.palette.secondary.light },
+      warning: { main: theme.palette.warning.main, light: theme.palette.warning.main },
+      success: { main: theme.palette.success.main, light: theme.palette.success.main },
+      info: { main: theme.palette.info.main, light: theme.palette.info.main },
     };
 
     const colorSet = buttonColors[color] || buttonColors.primary;
@@ -423,9 +425,11 @@ const StaffDashboard = () => {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '60vh',
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1976D2 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)'
+          : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
       }}>
-        <CircularProgress sx={{ color: '#90CAF9' }} />
+        <CircularProgress sx={{ color: theme.palette.secondary.main }} />
       </Box>
     );
   }
@@ -434,7 +438,9 @@ const StaffDashboard = () => {
     return (
       <Container maxWidth="xl" sx={{ 
         py: 4,
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1976D2 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+          : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)',
         minHeight: '100vh',
       }}>
         <Alert
@@ -447,9 +453,9 @@ const StaffDashboard = () => {
           sx={{
             borderRadius: 3,
             backdropFilter: 'blur(10px)',
-            background: alpha('#F44336', 0.1),
-            border: `1px solid ${alpha('#F44336', 0.3)}`,
-            color: '#FFCDD2',
+            background: alpha(theme.palette.error.main, 0.1),
+            border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
+            color: theme.palette.error.light,
           }}
         >
           {error}
@@ -461,9 +467,11 @@ const StaffDashboard = () => {
   return (
     <Container maxWidth="xl" sx={{ 
       py: 4,
-      background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+      background: theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+        : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)',
       minHeight: '100vh',
-      color: '#E3F2FD',
+      color: theme.palette.text.primary,
     }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -479,11 +487,13 @@ const StaffDashboard = () => {
                 fontWeight={800} 
                 gutterBottom
                 sx={{
-                  background: 'linear-gradient(135deg, #FFFFFF 0%, #90CAF9 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #A5B4FC 0%, #818CF8 100%)'
+                    : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
-                  textShadow: '0 0 30px rgba(144, 202, 249, 0.5)',
+                  textShadow: theme.palette.mode === 'dark' ? '0 0 30px rgba(165, 180, 252, 0.5)' : '0 0 30px rgba(99, 102, 241, 0.3)',
                 }}
               >
                 Staff Dashboard
@@ -494,7 +504,7 @@ const StaffDashboard = () => {
                   fontWeight: 400,
                   opacity: 0.9,
                   maxWidth: '600px',
-                  color: '#BBDEFB',
+                  color: theme.palette.text.secondary,
                 }}
               >
                 Welcome back, {user?.name || 'Staff Member'} • {user?.staffCategory || 'General'} Specialist
@@ -507,13 +517,13 @@ const StaffDashboard = () => {
                 onClick={fetchDashboardData}
                 sx={{
                   backdropFilter: 'blur(10px)',
-                  background: alpha('#1976D2', 0.1),
-                  border: `2px solid ${alpha('#42A5F5', 0.3)}`,
-                  color: '#90CAF9',
+                  background: alpha(theme.palette.primary.main, 0.1),
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                  color: theme.palette.primary.main,
                   fontWeight: 600,
                   '&:hover': {
-                    background: alpha('#1976D2', 0.2),
-                    borderColor: '#90CAF9',
+                    background: alpha(theme.palette.primary.main, 0.2),
+                    borderColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -529,7 +539,9 @@ const StaffDashboard = () => {
             variant="h5" 
             fontWeight={700}
             sx={{
-              background: 'linear-gradient(135deg, #FFFFFF 0%, #90CAF9 100%)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #A5B4FC 0%, #818CF8 100%)'
+                : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 3,

@@ -167,23 +167,7 @@ const AdminSidebar = () => {
     {
       title: "Financial",
       icon: <AttachMoney />,
-      children: [
-        { 
-          title: "Donations", 
-          path: "/admin/financial/donations",
-          icon: <AttachMoney fontSize="small" />
-        },
-        { 
-          title: "Financial Reports", 
-          path: "/admin/financial/reports",
-          icon: <ReceiptLong fontSize="small" />
-        },
-        { 
-          title: "Transaction Log", 
-          path: "/admin/financial/transactions",
-          icon: <BarChart fontSize="small" />
-        },
-      ],
+      path: "/admin/financial",
       color: "#8B5CF6",
       gradient: "linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)",
     },

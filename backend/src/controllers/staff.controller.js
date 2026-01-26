@@ -5,6 +5,7 @@ const asyncHandler = require('../utils/asyncHandler');                          
 const { uploadToCloudinary } = require('../config/cloudinary');
 // ✅ FIXED: Use your existing notification service
 const { createNotification } = require('../services/notification.service');
+const notificationEmitter = require('../services/notificationEmitter.service');
 const User = require('../models/User');
 const Report = require('../models/Report');
 
@@ -798,39 +799,9 @@ exports.completeTaskForReview = asyncHandler(async (req, res, next) => {
 
   await report.save();
 
-  // Send notifications
+  // Send notifications using the new notificationEmitter
   try {
-    // Notify admins
-    await createNotification({
-      user: req.user.id,
-      type: 'TASK_NEEDS_REVIEW',
-      title: 'Task Completed - Needs Review',
-      message: `${req.user.name} has completed task "${report.title}" and it requires admin review.`,
-      data: {
-        reportId: report._id,
-        staffId: req.user.id,
-        staffName: req.user.name,
-        beforeImages: report.images,
-        afterImages: report.afterImages,
-        needsReview: true
-      },
-      recipients: ['admin']
-    });
-
-    // Notify the user who reported
-    await createNotification({
-      user: req.user.id,
-      type: 'REPORT_COMPLETED',
-      title: 'Your Report is Complete!',
-      message: `Staff has completed work on your report "${report.title}". It's now under admin review.`,
-      data: {
-        reportId: report._id,
-        beforeImages: report.images,
-        afterImages: report.afterImages,
-        status: 'under_review'
-      },
-      recipients: [report.user._id]
-    });
+    await notificationEmitter.notifyTaskCompleted(report, req.user);
   } catch (notificationError) {
     console.error('Notification failed:', notificationError);
   }
@@ -1470,35 +1441,9 @@ exports.markReportComplete = asyncHandler(async (req, res, next) => {
 
   await report.save();
 
-  // Send notifications
+  // Send notifications using the new notificationEmitter
   try {
-    await createNotification({
-      user: req.user.id,
-      type: 'TASK_FOR_REVIEW',
-      title: 'Task Ready for Review',
-      message: `${req.user.name} has submitted task "${report.title}" for review`,
-      data: {
-        taskId: report._id,
-        staffId: req.user.id,
-        staffName: req.user.name,
-        beforeImages: report.images,
-        afterImages: report.afterImages
-      },
-      recipients: ['admin']
-    });
-
-    await createNotification({
-      user: req.user.id,
-      type: 'REPORT_COMPLETED',
-      title: 'Your Report is Complete!',
-      message: `Work has been completed on your report "${report.title}". Awaiting final admin verification.`,
-      data: {
-        reportId: report._id,
-        beforeImages: report.images,
-        afterImages: report.afterImages
-      },
-      recipients: [report.user._id]
-    });
+    await notificationEmitter.notifyTaskCompleted(report, req.user);
   } catch (notificationError) {
     console.error('Notification failed:', notificationError);
   }

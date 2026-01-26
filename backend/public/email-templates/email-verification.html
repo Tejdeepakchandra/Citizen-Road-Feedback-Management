@@ -23,22 +23,22 @@
         </div>
         <div class="content">
             <div class="message">
-                <p>Hello ${name},</p>
+                <p>Hello {{name}},</p>
                 <p>Thank you for registering with Smart Road Management System. To complete your registration and verify your email address, please click the button below:</p>
             </div>
-            <div style="text-align: center;">
-                <a href="${verificationUrl}" class="button">Verify Email Address</a>
+            <div style=\"text-align: center;\">
+                <a href=\"{{verificationUrl}}\" class=\"button\">Verify Email Address</a>
             </div>
-            <div class="message">
+            <div class=\"message\">
                 <p>Or copy and paste this link in your browser:</p>
-                <div class="code">${verificationUrl}</div>
+                <div class=\"code\">{{verificationUrl}}</div>
                 <p><strong>Note:</strong> This verification link will expire in 24 hours.</p>
                 <p>If you didn't create this account, please ignore this email.</p>
             </div>
         </div>
-        <div class="footer">
-            <p>&copy; ${year} Smart Road Management System. All rights reserved.</p>
-            <p>Contact: ${supportEmail}</p>
+        <div class=\"footer\">
+            <p>&copy; {{year}} Smart Road Management System. All rights reserved.</p>
+            <p>Contact: {{supportEmail}}</p>
         </div>
     </div>
 </body>

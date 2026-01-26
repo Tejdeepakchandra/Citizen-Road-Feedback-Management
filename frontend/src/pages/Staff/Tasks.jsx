@@ -278,32 +278,32 @@ const StaffTasks = () => {
   const getStatusColor = (status, needsReview = false, adminApproved = false, adminRejected = false) => {
     // If needs review, show warning color
     if (needsReview === true && status === 'completed') {
-      return { bg: alpha('#FF9800', 0.1), color: '#FF9800' };
+      return { bg: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main };
     }
     
     // If admin rejected and returned for revision
     if (adminRejected === true && status === 'in_progress') {
-      return { bg: alpha('#F44336', 0.1), color: '#F44336' };
+      return { bg: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main };
     }
     
     // If admin approved, show success
     if (adminApproved === true && status === 'completed') {
-      return { bg: alpha('#4CAF50', 0.1), color: '#4CAF50' };
+      return { bg: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main };
     }
     
     switch (status) {
       case 'pending': 
       case 'assigned': 
-        return { bg: alpha('#2196F3', 0.1), color: '#2196F3' };
+        return { bg: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main };
       case 'in_progress': 
-        return { bg: alpha('#9C27B0', 0.1), color: '#9C27B0' };
+        return { bg: alpha(theme.palette.secondary.main, 0.1), color: theme.palette.secondary.main };
       case 'completed': 
         // Default completed without review (shouldn't happen in workflow)
-        return { bg: alpha('#4CAF50', 0.1), color: '#4CAF50' };
+        return { bg: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main };
       case 'rejected': 
-        return { bg: alpha('#F44336', 0.1), color: '#F44336' };
+        return { bg: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main };
       default: 
-        return { bg: alpha('#9E9E9E', 0.1), color: '#9E9E9E' };
+        return { bg: alpha(theme.palette.grey[400], 0.1), color: theme.palette.grey[400] };
     }
   };
 
@@ -330,17 +330,17 @@ const StaffTasks = () => {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return { bg: alpha('#F44336', 0.1), color: '#F44336' };
-      case 'medium': return { bg: alpha('#FF9800', 0.1), color: '#FF9800' };
-      case 'low': return { bg: alpha('#4CAF50', 0.1), color: '#4CAF50' };
-      default: return { bg: alpha('#9E9E9E', 0.1), color: '#9E9E9E' };
+      case 'high': return { bg: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main };
+      case 'medium': return { bg: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main };
+      case 'low': return { bg: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main };
+      default: return { bg: alpha(theme.palette.grey[400], 0.1), color: theme.palette.grey[400] };
     }
   };
 
   const getProgressColor = (progress) => {
-    if (progress < 30) return '#F44336';
-    if (progress < 70) return '#FF9800';
-    return '#4CAF50';
+    if (progress < 30) return theme.palette.error.main;
+    if (progress < 70) return theme.palette.warning.main;
+    return theme.palette.success.main;
   };
 
   const handleChangePage = (event, newPage) => {
@@ -393,10 +393,10 @@ const StaffTasks = () => {
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box>
-                <Typography variant="h6" fontWeight={600} sx={{ color: '#E3F2FD', mb: 0.5 }}>
+                <Typography variant="h6" fontWeight={600} sx={{ color: theme.palette.primary.main, mb: 0.5 }}>
                   {task.title}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#90CAF9' }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   {task.category} • {task.severity}
                 </Typography>
               </Box>
@@ -424,13 +424,13 @@ const StaffTasks = () => {
               </Box>
             </Box>
 
-            <Typography variant="body2" sx={{ color: '#BBDEFB', mb: 2 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
               {task.description?.substring(0, 150)}...
             </Typography>
 
             <Box sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="caption" sx={{ color: '#90CAF9' }}>
+                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                   Progress
                 </Typography>
                 <Typography variant="caption" fontWeight={600} sx={{ color: progressColor }}>
@@ -443,7 +443,7 @@ const StaffTasks = () => {
                 sx={{
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: alpha('#90CAF9', 0.1),
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 3,
                     backgroundColor: progressColor,
@@ -455,16 +455,16 @@ const StaffTasks = () => {
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocationOn fontSize="small" sx={{ color: '#90CAF9' }} />
-                  <Typography variant="caption" sx={{ color: '#BBDEFB' }}>
+                  <LocationOn fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {task.location?.address?.substring(0, 30)}...
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Schedule fontSize="small" sx={{ color: '#90CAF9' }} />
-                  <Typography variant="caption" sx={{ color: '#BBDEFB' }}>
+                  <Schedule fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {task.estimatedCompletion 
                       ? format(parseISO(task.estimatedCompletion), 'MMM d, yyyy')
                       : 'No deadline'}
@@ -473,16 +473,16 @@ const StaffTasks = () => {
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CalendarToday fontSize="small" sx={{ color: '#90CAF9' }} />
-                  <Typography variant="caption" sx={{ color: '#BBDEFB' }}>
+                  <CalendarToday fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {formatDistanceToNow(parseISO(task.createdAt), { addSuffix: true })}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PhotoCamera fontSize="small" sx={{ color: '#90CAF9' }} />
-                  <Typography variant="caption" sx={{ color: '#BBDEFB' }}>
+                  <PhotoCamera fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {(task.images?.length || 0) + (task.beforeImages?.length || 0)} images
                   </Typography>
                 </Box>
@@ -496,9 +496,9 @@ const StaffTasks = () => {
               startIcon={<Visibility />}
               onClick={() => handleViewTask(task)}
               sx={{
-                color: '#90CAF9',
+                color: theme.palette.secondary.main,
                 '&:hover': {
-                  backgroundColor: alpha('#90CAF9', 0.1),
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                 },
               }}
             >
@@ -512,9 +512,9 @@ const StaffTasks = () => {
                 startIcon={<Build />}
                 onClick={() => handleUpdateProgress(task)}
                 sx={{
-                  color: '#FFA726',
+                  color: theme.palette.warning.main,
                   '&:hover': {
-                    backgroundColor: alpha('#FFA726', 0.1),
+                    backgroundColor: alpha(theme.palette.warning.main, 0.1),
                   },
                 }}
               >
@@ -528,9 +528,9 @@ const StaffTasks = () => {
               onClick={() => handleViewImages(task)}
               disabled={!task.images?.length && !task.beforeImages?.length}
               sx={{
-                color: '#9C27B0',
+                color: theme.palette.secondary.main,
                 '&:hover': {
-                  backgroundColor: alpha('#9C27B0', 0.1),
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                 },
               }}
             >
@@ -544,7 +544,7 @@ const StaffTasks = () => {
               }}
               sx={{
                 ml: 'auto',
-                color: '#90CAF9',
+                color: theme.palette.secondary.main,
               }}
             >
               <MoreVert />
@@ -562,9 +562,11 @@ const StaffTasks = () => {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '60vh',
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)'
+          : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
       }}>
-        <CircularProgress sx={{ color: '#90CAF9' }} />
+        <CircularProgress sx={{ color: theme.palette.secondary.main }} />
       </Box>
     );
   }
@@ -573,7 +575,9 @@ const StaffTasks = () => {
     return (
       <Container maxWidth="xl" sx={{ 
         py: 4,
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #1e293b 0%, #1a365d 100%)'
+          : 'linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%)',
         minHeight: '100vh',
       }}>
         <Alert
@@ -586,9 +590,9 @@ const StaffTasks = () => {
           sx={{
             borderRadius: 3,
             backdropFilter: 'blur(10px)',
-            background: alpha('#F44336', 0.1),
-            border: `1px solid ${alpha('#F44336', 0.3)}`,
-            color: '#FFCDD2',
+            background: alpha(theme.palette.error.main, 0.1),
+            border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
+            color: theme.palette.error.light,
           }}
         >
           {error}
@@ -600,9 +604,11 @@ const StaffTasks = () => {
   return (
     <Container maxWidth="xl" sx={{ 
       py: 4,
-      background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+      background: theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, #1e293b 0%, #1a365d 100%)'
+        : 'linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%)',
       minHeight: '100vh',
-      color: '#E3F2FD',
+      color: theme.palette.text.primary,
     }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -618,14 +624,16 @@ const StaffTasks = () => {
                 fontWeight={800}
                 gutterBottom
                 sx={{
-                  background: 'linear-gradient(135deg, #FFFFFF 0%, #90CAF9 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #E0E7FF 0%, #818CF8 100%)'
+                    : 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
               >
                 My Assigned Tasks
               </Typography>
-              <Typography variant="body1" sx={{ color: '#BBDEFB' }}>
+              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
                 Manage and track all tasks assigned to you
               </Typography>
             </Box>
@@ -634,9 +642,13 @@ const StaffTasks = () => {
               startIcon={<Refresh />}
               onClick={fetchTasks}
               sx={{
-                background: 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)'
+                  : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #2196F3 0%, #1565C0 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #A5B4FC 0%, #818CF8 100%)'
+                    : 'linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)',
                 },
               }}
             >
@@ -648,19 +660,21 @@ const StaffTasks = () => {
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[
-            { label: 'Total Tasks', value: stats.total, color: '#1976D2', icon: <Assignment /> },
-            { label: 'Pending', value: stats.pending, color: '#FFA726', icon: <Pending /> },
-            { label: 'In Progress', value: stats.inProgress, color: '#9C27B0', icon: <Build /> },
-            { label: 'In Review', value: stats.inReview, color: '#FF9800', icon: <Warning /> },
-            { label: 'Needs Revision', value: stats.needsRevision, color: '#F44336', icon: <Error /> },
-            { label: 'Completed', value: stats.completed, color: '#4CAF50', icon: <CheckCircle /> },
+            { label: 'Total Tasks', value: stats.total, color: theme.palette.primary.main, icon: <Assignment /> },
+            { label: 'Pending', value: stats.pending, color: theme.palette.warning.main, icon: <Pending /> },
+            { label: 'In Progress', value: stats.inProgress, color: theme.palette.secondary.main, icon: <Build /> },
+            { label: 'In Review', value: stats.inReview, color: theme.palette.info.main, icon: <Warning /> },
+            { label: 'Needs Revision', value: stats.needsRevision, color: theme.palette.error.main, icon: <Error /> },
+            { label: 'Completed', value: stats.completed, color: theme.palette.success.main, icon: <CheckCircle /> },
           ].map((stat, index) => (
             <Grid item xs={12} sm={6} md={2} key={index}>
               <Card
                 sx={{
                   borderRadius: 3,
                   backdropFilter: 'blur(10px)',
-                  background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(13, 71, 161, 0.05) 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)'
+                    : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%)',
                   border: `1px solid ${alpha(stat.color, 0.3)}`,
                 }}
               >
@@ -675,10 +689,10 @@ const StaffTasks = () => {
                       {stat.icon}
                     </Avatar>
                     <Box>
-                      <Typography variant="h4" fontWeight={700} sx={{ color: '#E3F2FD' }}>
+                      <Typography variant="h4" fontWeight={700} sx={{ color: theme.palette.primary.main }}>
                         {stat.value}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#BBDEFB' }}>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                         {stat.label}
                       </Typography>
                     </Box>
@@ -696,8 +710,10 @@ const StaffTasks = () => {
             p: 2,
             borderRadius: 3,
             backdropFilter: 'blur(10px)',
-            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(13, 71, 161, 0.05) 100%)',
-            border: '1px solid rgba(66, 165, 245, 0.2)',
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           }}
         >
           <Tabs
@@ -705,13 +721,13 @@ const StaffTasks = () => {
             onChange={handleTabChange}
             sx={{
               '& .MuiTab-root': {
-                color: '#90CAF9',
+                color: theme.palette.text.secondary,
                 '&.Mui-selected': {
-                  color: '#FFFFFF',
+                  color: theme.palette.primary.main,
                 },
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#90CAF9',
+                backgroundColor: theme.palette.primary.main,
               },
             }}
           >
@@ -732,7 +748,7 @@ const StaffTasks = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: '#90CAF9' }} />
+                    <Search sx={{ color: theme.palette.text.secondary }} />
                   </InputAdornment>
                 ),
               }}
@@ -740,12 +756,12 @@ const StaffTasks = () => {
                 flexGrow: 1,
                 maxWidth: 300,
                 '& .MuiOutlinedInput-root': {
-                  color: '#E3F2FD',
+                  color: theme.palette.text.primary,
                   '& fieldset': {
-                    borderColor: alpha('#90CAF9', 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
                   },
                   '&:hover fieldset': {
-                    borderColor: '#90CAF9',
+                    borderColor: theme.palette.primary.main,
                   },
                 },
               }}
@@ -755,8 +771,8 @@ const StaffTasks = () => {
               startIcon={<FilterList />}
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
-                color: '#90CAF9',
-                borderColor: alpha('#90CAF9', 0.3),
+                color: theme.palette.primary.main,
+                borderColor: alpha(theme.palette.primary.main, 0.3),
               }}
               variant="outlined"
             >

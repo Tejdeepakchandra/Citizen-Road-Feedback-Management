@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -30,6 +30,7 @@ import * as yup from 'yup';
 import { donationAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../hooks/useSocket';
 
 const schema = yup.object({
   name: yup.string().required('Name is required'),
@@ -53,8 +54,67 @@ const DonationForm = () => {
   const [selectedCause, setSelectedCause] = useState('general');
   const [customAmount, setCustomAmount] = useState(500);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [fundsUpdated, setFundsUpdated] = useState(false);
   const theme = useTheme();
   const { user } = useAuth();
+  const { socket, isConnected } = useSocket();
+
+  // Initialize Socket.IO listeners for donation events
+  useEffect(() => {
+    if (!socket || !isConnected) {
+      console.warn('⚠️ DonationForm: Socket not connected yet');
+      return;
+    }
+
+    console.log('🔌 DonationForm: Setting up socket listeners for donations...');
+
+    // Define handler functions
+    const handleDonationCompleted = (data) => {
+      console.log('📬 DonationForm: Donation completed event received:', data);
+      setFundsUpdated(true);
+    };
+
+    // Listen for donation_received (for admins)
+    const handleDonationReceived = (data) => {
+      console.log('📬 DonationForm: Real-time donation notification:', data);
+      setNotification(data);
+    };
+
+    // Listen for donation_notification (for citizens/donors)
+    const handleDonationNotification = (data) => {
+      console.log('📬 DonationForm: Citizen donation notification received:', data);
+      setNotification({
+        type: data.type,
+        title: data.title,
+        message: data.message,
+        donationId: data.donationId
+      });
+    };
+
+    // Listen for donation_update (broadcast fallback)
+    const handleDonationUpdate = (data) => {
+      console.log('📬 DonationForm: Donation update broadcast received:', data);
+      setFundsUpdated(true);
+    };
+
+    // Attach listeners
+    socket.on('donation_completed', handleDonationCompleted);
+    socket.on('donation_received', handleDonationReceived);
+    socket.on('donation_notification', handleDonationNotification);
+    socket.on('donation_update', handleDonationUpdate);
+
+    console.log('✅ DonationForm: Socket listeners attached');
+
+    // Cleanup - remove listeners on unmount
+    return () => {
+      console.log('🧹 DonationForm: Removing socket listeners');
+      socket.off('donation_completed', handleDonationCompleted);
+      socket.off('donation_received', handleDonationReceived);
+      socket.off('donation_notification', handleDonationNotification);
+      socket.off('donation_update', handleDonationUpdate);
+    };
+  }, [socket, isConnected]);
 
   const {
     control,
@@ -86,10 +146,24 @@ const DonationForm = () => {
 
   const processPayment = async (paymentData) => {
     try {
+      console.log('Processing payment with data:', paymentData);
+      console.log('Data types:', {
+        razorpay_order_id: typeof paymentData.razorpay_order_id,
+        razorpay_payment_id: typeof paymentData.razorpay_payment_id,
+        razorpay_signature: typeof paymentData.razorpay_signature,
+        donationId: typeof paymentData.donationId
+      });
+      
       const response = await donationAPI.verifyPayment(paymentData);
+      console.log('Payment verification response:', response.data);
       return response.data;
     } catch (error) {
-      throw new Error('Payment verification failed');
+      console.error('Payment verification error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw new Error(error.response?.data?.message || 'Payment verification failed');
     }
   };
 
@@ -103,27 +177,46 @@ const DonationForm = () => {
     }
 
     setLoading(true);
+    let donationIdForVerification;
+    
     try {
-      // Create order
-      const orderResponse = await donationAPI.createOrder(data.amount);
-      const { order_id, amount } = orderResponse.data;
+      // Create order with all donation data
+      const orderResponse = await donationAPI.createOrder({
+        amount: data.amount,
+        message: data.message,
+        name: data.name,
+        email: data.email,
+        anonymous: data.anonymous,
+        cause: selectedCause
+      });
+      console.log('Full order response:', orderResponse);
+      
+      const orderData = orderResponse.data.data;
+      const { order, donationId } = orderData;
+      donationIdForVerification = donationId; // Store for use in handler
+      
+      console.log('Extracted:', { order_id: order.id, amount: order.amount, donationId });
 
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-        amount: amount,
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
         currency: 'INR',
         name: 'RoadCare - Smart Road Maintenance',
         description: `Donation for ${causes.find(c => c.value === selectedCause)?.label}`,
-        order_id: order_id,
+        order_id: order.id,
         handler: async (response) => {
           try {
+            console.log('=== RAZORPAY HANDLER RESPONSE ===');
+            console.log('Full response object:', response);
+            console.log('Response keys:', Object.keys(response));
+            
+            // For net banking and other methods, we'll verify using just the payment ID
+            // The backend will fetch the payment details from Razorpay API
             const paymentData = {
-              ...response,
-              donationData: {
-                ...data,
-                cause: selectedCause,
-              },
+              razorpay_payment_id: response.razorpay_payment_id,
+              donationId: donationIdForVerification,
             };
+            console.log('Sending to verify:', paymentData);
 
             const verification = await processPayment(paymentData);
             
@@ -195,18 +288,43 @@ const DonationForm = () => {
             <Typography variant="body1" color="text.secondary" paragraph>
               Your contribution will help make our roads safer and better for everyone.
             </Typography>
+            
+            {/* Real-time Status Updates */}
+            <Box sx={{ my: 3, textAlign: 'left', backgroundColor: theme.palette.info.main + '10', p: 2, borderRadius: 2 }}>
+              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+                📊 Processing Status:
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
+                <Typography variant="body2">Payment verified successfully</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
+                <Typography variant="body2">Notification sent</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <CheckCircle sx={{ fontSize: 18, color: fundsUpdated ? theme.palette.success.main : theme.palette.warning.main }} />
+                <Typography variant="body2">
+                  {fundsUpdated ? '✅ Funds updated in real-time' : '📡 Waiting for real-time update...'}
+                </Typography>
+              </Box>
+            </Box>
+
             <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
               A confirmation email has been sent to your registered email address.
             </Typography>
             <Button
               variant="contained"
-              onClick={() => setShowSuccess(false)}
+              onClick={() => {
+                setShowSuccess(false);
+                setFundsUpdated(false);
+              }}
               sx={{ mr: 2 }}
             >
               Make Another Donation
             </Button>
-            <Button variant="outlined" href="/dashboard">
-              Go to Dashboard
+            <Button variant="outlined" href="/donor-wall">
+              View Donor Wall
             </Button>
           </CardContent>
         </Card>

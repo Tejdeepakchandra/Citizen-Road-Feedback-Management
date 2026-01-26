@@ -186,7 +186,7 @@ export const authAPI = {
   updateProfile: (userData) => api.put("/auth/updatedetails", userData),
   forgotPassword: (email) => api.post("/auth/forgotpassword", { email }),
   resetPassword: (token, password) =>
-    api.put("/auth/resetpassword", { token, password }),
+    api.put(`/auth/resetpassword/${token}`, { password }),
   logout: () => api.post("/auth/logout"),
 };
 
@@ -289,8 +289,10 @@ completeTask: (taskId, data) =>
 // services/api.js - Add these donation API endpoints
 export const donationAPI = {
   // Create donation order
-  createOrder: async (amount) => {
-    return await api.post("/donations/create-order", { amount });
+  createOrder: async (donationData) => {
+    // Support both old (amount only) and new (full object) format
+    const data = typeof donationData === 'number' ? { amount: donationData } : donationData;
+    return await api.post("/donations/create-order", data);
   },
 
   // Verify payment

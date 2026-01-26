@@ -7,6 +7,7 @@ const { uploadToCloudinary } = require('../config/cloudinary');
 const { sendEmail } = require('../services/email.service');
 const { createNotification } = require('../services/notification.service');
 const { emitToSocket } = require('../services/socket.service');
+const notificationEmitter = require('../services/notificationEmitter.service');
 
 // Helper function to calculate percentage based on status
 const calculatePercentage = (status) => {
@@ -190,21 +191,92 @@ exports.createReport = asyncHandler(async (req, res, next) => {
 
   // Send email to user
   try {
+    const userEmailContext = {
+      name: req.user.name,
+      email: req.user.email,
+      reportId: report._id.toString().slice(-8),
+      category: report.category,
+      title: report.title,
+      description: report.description,
+      address: report.location.address,
+      date: new Date(report.createdAt).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      severity: report.severity || 'medium',
+      landmark: report.location.landmark,
+      ward: report.location.ward,
+      zone: report.location.zone,
+      appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+      supportEmail: 'support@smartroad.com',
+      appName: 'Smart Road Management',
+      year: new Date().getFullYear()
+    };
+
     await sendEmail({
       to: req.user.email,
-      subject: 'Report Submitted Successfully',
+      subject: `Report Submitted: #${report._id.toString().slice(-6)} - ${report.title}`,
       template: 'report-submitted',
-      context: {
-        name: req.user.name,
-        reportId: report._id,
-        title: report.title,
-        category: report.category,
-        date: new Date().toLocaleDateString(),
-        year: new Date().getFullYear()
-      }
+      context: userEmailContext
     });
-  } catch (emailError) {
-    console.error('Email sending failed:', emailError);
+    
+    console.log(`✅ Email sent to user: ${req.user.email}`);
+  } catch (userEmailError) {
+    console.error('❌ User email sending failed:', userEmailError);
+  }
+
+  // Send email to admin for new report
+  try {
+    const admins = await User.find({ role: 'admin' }).select('email name');
+    if (admins && admins.length > 0) {
+      for (const admin of admins) {
+        const adminEmailContext = {
+          adminName: admin.name,
+          reportId: report._id.toString().slice(-8),
+          title: report.title,
+          category: report.category,
+          description: report.description,
+          address: report.location.address,
+          severity: report.severity || 'medium',
+          landmark: report.location.landmark,
+          ward: report.location.ward,
+          zone: report.location.zone,
+          reportedBy: req.user.name,
+          date: new Date(report.createdAt).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+          appName: 'Smart Road Management',
+          year: new Date().getFullYear()
+        };
+
+        await sendEmail({
+          to: admin.email,
+          subject: `🚨 New Report Submitted: #${report._id.toString().slice(-6)} - ${report.title}`,
+          template: 'admin-report-submitted',
+          context: adminEmailContext
+        });
+        
+        console.log(`✅ Admin notification email sent to: ${admin.email}`);
+      }
+    }
+  } catch (adminEmailError) {
+    console.error('❌ Admin notification email failed:', adminEmailError);
+  }
+
+  // 📬 Emit real-time notification to admins
+  try {
+    await notificationEmitter.notifyReportSubmitted(report, req.user);
+    console.log('✅ Real-time notification emitted to admins');
+  } catch (notifError) {
+    console.error('❌ Real-time notification failed:', notifError);
   }
 
   // Emit real-time update
@@ -657,13 +729,22 @@ exports.updateReportStatus = asyncHandler(async (req, res, next) => {
       await sendEmail({
         to: report.user.email,
         subject: 'Report Status Updated',
-        template: 'status-updated',
+        template: 'user-status-updated',
         context: {
           name: report.user.name,
-          reportId: report._id,
-          oldStatus,
-          newStatus: status,
-          date: new Date().toLocaleDateString()
+          reportId: report._id.toString().slice(-8),
+          title: report.title,
+          status: status,
+          progress: report.progress || calculatePercentage(status),
+          updateDescription: description || `Status changed from ${oldStatus} to ${status}`,
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+          appName: 'Smart Road Feedback',
+          year: new Date().getFullYear()
         }
       });
     } catch (error) {
@@ -760,6 +841,72 @@ exports.addProgressUpdate = asyncHandler(async (req, res, next) => {
   report.progressUpdates.push(progressUpdate);
   await report.save();
 
+  // Send progress update email to user/citizen
+  try {
+    await sendEmail({
+      to: report.user.email,
+      subject: `📊 Progress Update: ${report.title}`,
+      template: 'progress-update',
+      context: {
+        name: report.user.name,
+        reportId: report._id.toString().slice(-8),
+        title: report.title,
+        progress: progressValue,
+        progressPercentage: `${progressValue}%`,
+        updateDescription: description || 'Progress update added by staff',
+        staffName: req.user.name,
+        date: new Date().toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }),
+        appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+        appName: 'Smart Road Feedback',
+        year: new Date().getFullYear()
+      }
+    });
+    console.log(`✅ Progress update email sent to user: ${report.user.email}`);
+  } catch (emailError) {
+    console.error('❌ Progress update email failed:', emailError);
+  }
+
+  // Send progress update email to all admins
+  try {
+    const admins = await User.find({ role: 'admin', isActive: true }).select('email name');
+    for (const admin of admins) {
+      try {
+        await sendEmail({
+          to: admin.email,
+          subject: `📊 Progress Update: ${report.title}`,
+          template: 'progress-update',
+          context: {
+            name: admin.name,
+            reportId: report._id.toString().slice(-8),
+            title: report.title,
+            progress: progressValue,
+            progressPercentage: `${progressValue}%`,
+            updateDescription: description || 'Progress update added by staff',
+            staffName: req.user.name,
+            reporterName: report.user.name,
+            date: new Date().toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+            appName: 'Smart Road Feedback',
+            year: new Date().getFullYear()
+          }
+        });
+        console.log(`✅ Progress update email sent to admin: ${admin.email}`);
+      } catch (err) {
+        console.error(`❌ Progress update email failed for admin ${admin.email}:`, err);
+      }
+    }
+  } catch (emailError) {
+    console.error('❌ Failed to send progress update emails to admins:', emailError);
+  }
+
   // Create notifications
   try {
     await createNotification({
@@ -772,6 +919,20 @@ exports.addProgressUpdate = asyncHandler(async (req, res, next) => {
     });
   } catch (error) {
     console.error('Notification creation failed:', error);
+  }
+
+  // 📬 Emit real-time notification to admin & user
+  try {
+    const populatedReport = await Report.findById(report._id).populate('user');
+    await notificationEmitter.notifyProgressUpdate(
+      populatedReport,
+      req.user,
+      progressValue,
+      description || 'Progress update added by staff'
+    );
+    console.log('✅ Real-time progress notification emitted');
+  } catch (notifError) {
+    console.error('❌ Real-time notification failed:', notifError);
   }
 
   // Emit real-time update
@@ -828,6 +989,30 @@ exports.assignReport = asyncHandler(async (req, res, next) => {
 
   await report.save();
 
+
+  try {
+    await sendEmail({
+      to: staff.email,
+      subject: `New Task Assigned: ${report.title}`,
+      template: 'report-assigned',
+      context: {
+        staffName: staff.name,
+        reportId: report._id.toString().slice(-8),
+        title: report.title,
+        category: report.category,
+        priority: report.severity,
+        location: report.location?.address,
+        dueDate: dueDate ? new Date(dueDate).toLocaleDateString() : null,
+        assignedBy: req.user.name,
+        appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+        year: new Date().getFullYear()
+      }
+    });
+    console.log(`✅ Assignment email sent to staff: ${staff.email}`);
+  } catch (emailError) {
+    console.error('❌ Assignment email failed:', emailError);
+  }
+
   // Create notification
   try {
     await createNotification({
@@ -848,6 +1033,14 @@ exports.assignReport = asyncHandler(async (req, res, next) => {
     });
   } catch (notifError) {
     console.error('Notification service error:', notifError);
+  }
+
+  // 📬 Emit real-time notification to staff
+  try {
+    await notificationEmitter.notifyTaskAssigned(report, staff);
+    console.log('✅ Real-time notification emitted to staff');
+  } catch (notifError) {
+    console.error('❌ Real-time notification failed:', notifError);
   }
 
   res.status(200).json({
@@ -1215,6 +1408,47 @@ exports.completeForReview = asyncHandler(async (req, res, next) => {
 
   await report.save();
 
+  // Send admin review notification email
+  try {
+    const admins = await User.find({ role: 'admin' }).select('email name');
+    for (const admin of admins) {
+      await sendEmail({
+        to: admin.email,
+        subject: `📋 Task Ready for Review: ${report.title}`,
+        template: 'admin-task-completed',
+        context: {
+          adminName: admin.name,
+          reportId: report._id.toString().slice(-8),
+          title: report.title,
+          category: report.category,
+          staffName: req.user.name,
+          status: 'Under Review',
+          completionDate: report.staffCompletedAt.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          completionTime: report.staffCompletedAt.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          completionNotes: completionNotes || 'Task completed by staff member',
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+          appName: 'Smart Road Feedback',
+          year: new Date().getFullYear()
+        }
+      });
+    }
+    console.log(`✅ Task completion review email sent to all admins`);
+  } catch (emailError) {
+    console.error('❌ Task completion email failed:', emailError);
+  }
+
   // Create notification for admin
   try {
     await createNotification({
@@ -1234,6 +1468,14 @@ exports.completeForReview = asyncHandler(async (req, res, next) => {
     });
   } catch (error) {
     console.error('Notification failed:', error);
+  }
+
+  // 📬 Emit real-time notification to admins
+  try {
+    await notificationEmitter.notifyTaskForReview(report, req.user);
+    console.log('✅ Real-time task review notification emitted to admins');
+  } catch (notifError) {
+    console.error('❌ Real-time notification failed:', notifError);
   }
 
   res.status(200).json({
@@ -1302,6 +1544,68 @@ exports.approveCompletion = async (req, res) => {
     
     await report.save();
     
+
+     try {
+      const resolutionTime = report.completionTime 
+        ? `${report.completionTime.toFixed(1)} hours` 
+        : 'N/A';
+      
+      await sendEmail({
+        to: report.user.email,
+        subject: `Your Report Has Been Resolved: ${report.title}`,
+        template: 'user-report-completed',
+        context: {
+          name: report.user.name,
+          reportId: report._id.toString().slice(-8),
+          title: report.title,
+          category: report.category,
+          location: report.location?.address,
+          staffName: report.assignedTo?.name || 'Our team',
+          resolutionTime: resolutionTime,
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000'
+        }
+      });
+      console.log(`✅ Report resolved email sent to user: ${report.user.email}`);
+    } catch (emailError) {
+      console.error('❌ Report resolved email failed:', emailError);
+    }
+
+    // Send staff approval email
+    if (report.assignedTo) {
+      try {
+        await sendEmail({
+          to: report.assignedTo.email,
+          subject: `✅ Your Task Has Been Approved: ${report.title}`,
+          template: 'staff-task-approved',
+          context: {
+            staffName: report.assignedTo.name,
+            reportId: report._id.toString().slice(-8),
+            title: report.title,
+            category: report.category,
+            status: 'Completed',
+            approvedBy: req.user.name,
+            adminNotes: adminNotes || 'Great work on this task!',
+            date: new Date().toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+            appName: 'Smart Road Feedback',
+            year: new Date().getFullYear()
+          }
+        });
+        console.log(`✅ Task approval email sent to staff: ${report.assignedTo.email}`);
+      } catch (emailError) {
+        console.error('❌ Task approval email failed:', emailError);
+      }
+    }
+
     // Notify staff that their work was approved
     try {
       await createNotification({
@@ -1314,6 +1618,17 @@ exports.approveCompletion = async (req, res) => {
       });
     } catch (error) {
       console.error('Notification failed:', error);
+    }
+
+    // 📬 Emit real-time notification to staff & user
+    try {
+      const populatedReport = await Report.findById(report._id)
+        .populate('assignedTo')
+        .populate('user');
+      await notificationEmitter.notifyTaskApproved(populatedReport, req.user);
+      console.log('✅ Real-time task approval notification emitted');
+    } catch (notifError) {
+      console.error('❌ Real-time notification failed:', notifError);
     }
     
     res.json({
@@ -1388,6 +1703,38 @@ exports.rejectCompletion = async (req, res) => {
     
     await report.save();
     
+    // Send staff revision request email
+    if (report.assignedTo) {
+      try {
+        await sendEmail({
+          to: report.assignedTo.email,
+          subject: `🔄 Revision Required: ${report.title}`,
+          template: 'staff-needs-revision',
+          context: {
+            staffName: report.assignedTo.name,
+            reportId: report._id.toString().slice(-8),
+            title: report.title,
+            category: report.category,
+            status: 'Needs Revision',
+            reviewedBy: req.user.name,
+            rejectionReason: rejectionReason || 'Please review and make necessary corrections',
+            adminNotes: rejectionReason || 'The admin has requested changes to this task',
+            date: new Date().toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+            appName: 'Smart Road Feedback',
+            year: new Date().getFullYear()
+          }
+        });
+        console.log(`✅ Revision request email sent to staff: ${report.assignedTo.email}`);
+      } catch (emailError) {
+        console.error('❌ Revision request email failed:', emailError);
+      }
+    }
+    
     // Notify staff that their work was rejected
     try {
       await createNotification({
@@ -1400,6 +1747,20 @@ exports.rejectCompletion = async (req, res) => {
       });
     } catch (error) {
       console.error('Notification failed:', error);
+    }
+
+    // 📬 Emit real-time notification to staff
+    try {
+      const populatedReport = await Report.findById(report._id)
+        .populate('assignedTo');
+      await notificationEmitter.notifyRevisionRequested(
+        populatedReport,
+        req.user,
+        rejectionReason || 'Please review and make necessary corrections'
+      );
+      console.log('✅ Real-time revision request notification emitted');
+    } catch (notifError) {
+      console.error('❌ Real-time notification failed:', notifError);
     }
     
     res.json({
@@ -1518,6 +1879,36 @@ exports.updateReportProgress = async (req, res) => {
     }
     
     await report.save();
+
+
+    try {
+      await sendEmail({
+        to: report.user.email,
+        subject: `Progress Update: ${report.title}`,
+        template: 'progress-update',
+        context: {
+          name: report.user.name,
+          reportId: report._id.toString().slice(-8),
+          title: report.title,
+          status: report.status,
+          progress: report.progress,
+          description: description || 'Work is progressing',
+          imageCount: uploadedImages.length,
+          updatedBy: req.user.name,
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000'
+        }
+      });
+      console.log(`✅ Progress update email sent to user: ${report.user.email}`);
+    } catch (emailError) {
+      console.error('❌ Progress update email failed:', emailError);
+    }
     
     // Create notification for admin/user
     try {
@@ -1654,6 +2045,47 @@ exports.completeTask = async (req, res) => {
     }
     
     await report.save();
+    
+
+    try {
+      const admins = await User.find({ role: 'admin' }).select('email name');
+      for (const admin of admins) {
+        await sendEmail({
+          to: admin.email,
+          subject: `📋 Task Completed - Needs Review: ${report.title}`,
+          template: 'admin-task-completed',
+          context: {
+            adminName: admin.name,
+            reportId: report._id.toString().slice(-8),
+            title: report.title,
+            category: report.category,
+            staffName: req.user.name,
+            status: 'Under Review',
+            completionDate: report.staffCompletionTime.toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            completionTime: report.staffCompletionTime.toLocaleTimeString('en-IN', {
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+            completionNotes: completionNotes,
+            date: new Date().toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+            appName: 'Smart Road Feedback',
+            year: new Date().getFullYear()
+          }
+        });
+        console.log(`✅ Task completion email sent to admin: ${admin.email}`);
+      }
+    } catch (emailError) {
+      console.error('❌ Task completion email failed:', emailError);
+    }
     
     // Create notification for admin
     try {

@@ -27,6 +27,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useTheme,
 } from '@mui/material';
 import {
   LocationOn,
@@ -47,6 +48,7 @@ const UpdateProgress = () => {
   const { id } = useParams();
   const locationState = useLocation();
   const { user } = useAuth();
+  const theme = useTheme();
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

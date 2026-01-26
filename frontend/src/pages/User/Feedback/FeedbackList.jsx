@@ -20,8 +20,8 @@ import {
 
 import { Search } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { feedbackAPI } from "../../services/api";
-import { useAuth } from "../../hooks/useAuth";
+import { feedbackAPI } from "../../../services/api";
+import { useAuth } from "../../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 

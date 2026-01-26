@@ -28,7 +28,8 @@ import {
   Grid,
   Tooltip,
   alpha,
-  LinearProgress
+  LinearProgress,
+  useTheme
 } from "@mui/material";
 import {
   Delete,
@@ -47,13 +48,14 @@ import {
 } from "@mui/icons-material";
 
 import { toast } from "react-hot-toast";
-import { reportAPI } from "../../services/api";
-import { feedbackAPI } from "../../services/api";
+import { reportAPI } from "../../../services/api";
+import { feedbackAPI } from "../../../services/api";
 import StarIcon from "@mui/icons-material/Star";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../../hooks/useAuth";
 
 const MyReports = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -210,9 +212,9 @@ const MyReports = () => {
   };
 
   const getProgressColor = (progress) => {
-    if (progress < 30) return '#F44336';
-    if (progress < 70) return '#FF9800';
-    return '#4CAF50';
+    if (progress < 30) return theme.palette.error.main;
+    if (progress < 70) return theme.palette.warning.main;
+    return theme.palette.success.main;
   };
 
   const filteredReports = reports.filter((report) => {
@@ -332,7 +334,7 @@ const MyReports = () => {
           <StatCard 
             label="Total" 
             value={stats.total} 
-            color="#1976D2" 
+            color={theme.palette.primary.main} 
             icon={<Visibility />}
           />
         </Grid>
@@ -340,7 +342,7 @@ const MyReports = () => {
           <StatCard 
             label="Pending" 
             value={stats.pending} 
-            color="#FFA726" 
+            color={theme.palette.warning.main} 
             icon={<Warning />}
           />
         </Grid>
@@ -348,7 +350,7 @@ const MyReports = () => {
           <StatCard 
             label="In Progress" 
             value={stats.inProgress} 
-            color="#9C27B0" 
+            color={theme.palette.secondary.main} 
             icon={<Refresh />}
           />
         </Grid>
@@ -356,7 +358,7 @@ const MyReports = () => {
           <StatCard 
             label="In Review" 
             value={stats.inReview} 
-            color="#FF9800" 
+            color={theme.palette.warning.main} 
             icon={<Warning />}
           />
         </Grid>
@@ -364,7 +366,7 @@ const MyReports = () => {
           <StatCard 
             label="Completed" 
             value={stats.completed} 
-            color="#4CAF50" 
+            color={theme.palette.success.main} 
             icon={<CheckCircle />}
           />
         </Grid>
@@ -539,8 +541,8 @@ const MyReports = () => {
                           <Avatar sx={{ 
                             width: 32, 
                             height: 32, 
-                            bgcolor: alpha('#1976D2', 0.1),
-                            color: '#1976D2'
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.main
                           }}>
                             {report.assignedTo?.name?.charAt(0) || 'S'}
                           </Avatar>
@@ -569,7 +571,7 @@ const MyReports = () => {
                         {/* Show Stars if feedback exists */}
                         {report.status === 'completed' && report.adminApproved && feedbackMap[report._id]?.rating && (
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                            <StarIcon sx={{ color: "#fbbf24" }} />
+                            <StarIcon sx={{ color: theme.palette.warning.main }} />
                             <Typography variant="body2" fontWeight={600}>
                               {feedbackMap[report._id].rating} / 5
                             </Typography>
@@ -606,7 +608,7 @@ const MyReports = () => {
                               size="small"
                               onClick={() => openFeedbackPreview(report)}
                             >
-                              <RateReview sx={{ color: "#f59e0b" }} />
+                              <RateReview sx={{ color: theme.palette.warning.main }} />
                             </IconButton>
                           )}
                           
@@ -757,7 +759,7 @@ const MyReports = () => {
             {previewFeedback ? (
               <>
                 <Rating value={previewFeedback.rating} readOnly />
-                <Typography variant="body2" sx={{ mt: 1, p: 2, bgcolor: alpha('#f5f5f5', 0.5), borderRadius: 1 }}>
+                <Typography variant="body2" sx={{ mt: 1, p: 2, bgcolor: alpha(theme.palette.action.hover, 0.5), borderRadius: 1 }}>
                   "{previewFeedback.comment}"
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>

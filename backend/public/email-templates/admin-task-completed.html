@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Completed - Awaiting Admin Review</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { padding: 30px; background: #f9f9f9; border-radius: 0 0 10px 10px; }
+        .completion-details { background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #9C27B0; margin: 20px 0; }
+        .detail-row { display: flex; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .detail-label { font-weight: 600; color: #555; width: 150px; flex-shrink: 0; }
+        .detail-value { color: #222; flex: 1; }
+        .status-badge { display: inline-block; background: #f3e5f5; color: #7b1fa2; padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .info-box { background: #f3e5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #9C27B0; margin: 15px 0; }
+        .button { display: inline-block; background: #9C27B0; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: 600; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ Task Completed</h1>
+    </div>
+    <div class="content">
+        <p>Hello {{adminName}},</p>
+        <p>A staff member has completed their assigned task and it is now ready for your review.</p>
+        
+        <div class="info-box">
+            <h3>🔍 Review Required</h3>
+            <p>Please review the completed work and either approve it or request revisions as needed.</p>
+        </div>
+
+        <div class="completion-details">
+            <h3>Task Completion Details:</h3>
+            <div class="detail-row">
+                <span class="detail-label">Report ID:</span>
+                <span class="detail-value">#{{reportId}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Title:</span>
+                <span class="detail-value">{{title}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Category:</span>
+                <span class="detail-value">{{category}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Completed by:</span>
+                <span class="detail-value">{{staffName}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value"><span class="status-badge">⏳ Under Review</span></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Completion Date:</span>
+                <span class="detail-value">{{completionDate}}</span>
+            </div>
+            {{#if completionTime}}
+            <div class="detail-row">
+                <span class="detail-label">Time Taken:</span>
+                <span class="detail-value">{{completionTime}}</span>
+            </div>
+            {{/if}}
+        </div>
+
+        {{#if completionNotes}}
+        <div style="background: #fafafa; padding: 15px; border-radius: 5px; margin: 15px 0;">
+            <h4>Staff Notes:</h4>
+            <p>{{completionNotes}}</p>
+        </div>
+        {{/if}}
+        
+        <p><strong>Action Items:</strong></p>
+        <ul>
+            <li>Review the completed work and attached images</li>
+            <li>Approve the task if work meets quality standards</li>
+            <li>Request revisions if improvements are needed</li>
+            <li>Add feedback notes for the staff member</li>
+        </ul>
+        
+        <div style="text-align: center;">
+            <a href="{{appUrl}}/admin/reports/{{reportId}}" class="button">Review Task</a>
+        </div>
+        
+        <p>Best regards,<br>The {{appName}} Team</p>
+    </div>
+    <div class="footer">
+        <p>© {{year}} {{appName}}. All rights reserved.</p>
+    </div>
+</body>
+</html>

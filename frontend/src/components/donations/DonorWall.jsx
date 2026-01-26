@@ -30,6 +30,7 @@ import {
 import { motion } from 'framer-motion';
 import DonationCard from './DonationCard';
 import { donationAPI } from '../../services/api';
+import { useSocket } from '../../hooks/useSocket';
 
 // Mock data for fallback
 const MOCK_DONATIONS = Array.from({ length: 20 }, (_, i) => ({
@@ -69,6 +70,7 @@ const DonorWall = () => {
   const [retryDelay, setRetryDelay] = useState(0);
   
   const theme = useTheme();
+  const { socket, isConnected } = useSocket();
   const itemsPerPage = 9;
 
   const showError = useCallback((message) => {
@@ -172,6 +174,38 @@ const DonorWall = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Listen for real-time donation updates via Socket.IO
+  useEffect(() => {
+    if (!socket || !isConnected) {
+      console.warn('🔌 DonorWall: Socket not connected yet');
+      return;
+    }
+
+    console.log('🔌 DonorWall: Setting up socket listener...');
+
+    // When a new donation is completed, refresh the donor wall
+    const handleDonationCompleted = (donationData) => {
+      console.log('🔔 DonorWall: Real-time donation update - refreshing donor wall:', donationData);
+      fetchData();
+    };
+
+    const handleDonationUpdate = (data) => {
+      console.log('🔔 DonorWall: donation_update event received:', data);
+      fetchData();
+    };
+
+    socket.on('donation_completed', handleDonationCompleted);
+    socket.on('donation_update', handleDonationUpdate);
+    console.log('✅ DonorWall: Socket listeners attached');
+
+    // Cleanup listener on unmount
+    return () => {
+      console.log('🧹 DonorWall: Removing socket listeners');
+      socket.off('donation_completed', handleDonationCompleted);
+      socket.off('donation_update', handleDonationUpdate);
+    };
+  }, [socket, isConnected, fetchData]);
 
   const tabs = [
     { label: 'All Donations', value: 'all' },
@@ -349,71 +383,21 @@ const DonorWall = () => {
 
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Box>
-            <Typography variant="h3" fontWeight={800} gutterBottom>
-              Donor Wall
-              {usingMockData && (
-                <Chip 
-                  label="Sample Data" 
-                  size="small" 
-                  color="warning" 
-                  sx={{ ml: 2, verticalAlign: 'middle' }}
-                />
-              )}
-            </Typography>
-            <Typography variant="h6" color="text.secondary">
-              Celebrating our generous donors who make roads safer for everyone
-            </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Tooltip title="Refresh data">
+              <IconButton 
+                onClick={fetchData} 
+                disabled={loading}
+                sx={{ 
+                  backgroundColor: theme.palette.action.hover,
+                  '&:hover': { backgroundColor: theme.palette.action.selected }
+                }}
+              >
+                <Refresh />
+              </IconButton>
+            </Tooltip>
           </Box>
-          <Tooltip title="Refresh data">
-            <IconButton 
-              onClick={fetchData} 
-              disabled={loading}
-              sx={{ 
-                backgroundColor: theme.palette.action.hover,
-                '&:hover': { backgroundColor: theme.palette.action.selected }
-              }}
-            >
-              <Refresh />
-            </IconButton>
-          </Tooltip>
         </Box>
-
-        {/* Stats */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              icon={<AccountBalance />}
-              label="Total Raised"
-              value={`₹${(stats.totalAmount || 0).toLocaleString()}`}
-              color={theme.palette.success.main}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              icon={<People />}
-              label="Total Donors"
-              value={(stats.totalDonations || 0).toLocaleString()}
-              color={theme.palette.primary.main}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              icon={<TrendingUp />}
-              label="This Month"
-              value={`₹${Math.round((stats.totalAmount || 0) * 0.1).toLocaleString()}`}
-              color={theme.palette.warning.main}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              icon={<FilterList />}
-              label="Top Donors"
-              value={(stats.topDonors || 0).toLocaleString()}
-              color={theme.palette.secondary.main}
-            />
-          </Grid>
-        </Grid>
 
         {/* Filters */}
         <Box sx={{ 

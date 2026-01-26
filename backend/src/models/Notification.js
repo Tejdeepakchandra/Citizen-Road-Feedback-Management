@@ -23,6 +23,7 @@ const NotificationSchema = new mongoose.Schema({
       'feedback_request',
       'feedback_submitted',
       'donation_received',
+      'donation_successful',
       'donation_refunded',
       'broadcast',
       'system',

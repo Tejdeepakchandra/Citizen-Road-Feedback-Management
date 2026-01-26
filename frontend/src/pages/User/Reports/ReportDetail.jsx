@@ -35,8 +35,8 @@ import {
   Person,
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
-import { reportAPI } from '../../services/api';
-import { useAuth } from '../../context/AuthContext'; // Add this import
+import { reportAPI } from '../../../services/api';
+import { useAuth } from '../../../context/AuthContext'; // Add this import
 
 const ReportDetail = () => {
   const { id } = useParams();

@@ -1495,7 +1495,13 @@ const ImageApprovals = () => {
                         }}
                       />
                     </Box>
-                    <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                    <Box sx={{  p: 2, bgcolor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.06)'   // dark glass
+        : 'grey.100',    borderRadius: 2 ,borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.15)'
+        : 'grey.300', borderWidth: 1, borderStyle: 'solid'}}>
                       <Typography variant="subtitle2" gutterBottom>Details:</Typography>
                       <Typography variant="body2">
                         <strong>Caption:</strong> {selectedImage.beforeImage?.caption || 'Original image'}
@@ -1533,7 +1539,13 @@ const ImageApprovals = () => {
                         }}
                       />
                     </Box>
-                    <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                    <Box sx={{ p: 2, bgcolor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.06)'   // dark glass
+        : 'grey.100',    borderRadius: 2 ,borderColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.15)'
+        : 'grey.300', borderWidth: 1, borderStyle: 'solid'}}>
                       <Typography variant="subtitle2" gutterBottom>Details:</Typography>
                       <Typography variant="body2">
                         <strong>Caption:</strong> {selectedImage.afterImage?.caption || 'Completed work'}

@@ -421,33 +421,33 @@ const WorkHistory = () => {
   const getStatusColor = (status, needsReview = false, adminApproved = false, adminRejected = false, approvedAt = null, actualCompletion = null) => {
     // If admin rejected, show error color
     if (adminRejected === true) {
-      return { bg: alpha('#F44336', 0.1), color: '#F44336' };
+      return { bg: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main };
     }
     
     // If needs review, show warning color
     if (needsReview === true) {
-      return { bg: alpha('#FF9800', 0.1), color: '#FF9800' };
+      return { bg: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main };
     }
     
     // If admin approved OR has approval indicators, show success
     if (adminApproved === true || approvedAt || actualCompletion) {
-      return { bg: alpha('#4CAF50', 0.1), color: '#4CAF50' };
+      return { bg: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main };
     }
     
     switch (status) {
       case 'pending': 
-        return { bg: alpha('#757575', 0.1), color: '#757575' };
+        return { bg: alpha(theme.palette.grey[500], 0.1), color: theme.palette.grey[500] };
       case 'assigned': 
-        return { bg: alpha('#2196F3', 0.1), color: '#2196F3' };
+        return { bg: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main };
       case 'in_progress': 
-        return { bg: alpha('#9C27B0', 0.1), color: '#9C27B0' };
+        return { bg: alpha(theme.palette.secondary.main, 0.1), color: theme.palette.secondary.main };
       case 'completed': 
         // Default completed without approval (should be "In Review")
-        return { bg: alpha('#FF9800', 0.1), color: '#FF9800' };
+        return { bg: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main };
       case 'rejected': 
-        return { bg: alpha('#F44336', 0.1), color: '#F44336' };
+        return { bg: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main };
       default: 
-        return { bg: alpha('#9E9E9E', 0.1), color: '#9E9E9E' };
+        return { bg: alpha(theme.palette.grey[400], 0.1), color: theme.palette.grey[400] };
     }
   };
 
@@ -475,15 +475,15 @@ const WorkHistory = () => {
   };
 
   const getCompletionTimeColor = (days) => {
-    if (days <= 1) return '#4CAF50'; // Green for <= 1 day
-    if (days <= 3) return '#FF9800'; // Orange for <= 3 days
-    return '#F44336'; // Red for > 3 days
+    if (days <= 1) return theme.palette.success.main;
+    if (days <= 3) return theme.palette.warning.main;
+    return theme.palette.error.main;
   };
 
   const getProgressColor = (progress) => {
-    if (progress < 30) return '#F44336';
-    if (progress < 70) return '#FF9800';
-    return '#4CAF50';
+    if (progress < 30) return theme.palette.error.main;
+    if (progress < 70) return theme.palette.warning.main;
+    return theme.palette.success.main;
   };
 
   const handleChangePage = (event, newPage) => {
@@ -549,14 +549,14 @@ const WorkHistory = () => {
             {icon}
           </Avatar>
           <Box>
-            <Typography variant="h4" fontWeight={700} sx={{ color: '#E3F2FD' }}>
+            <Typography variant="h4" fontWeight={700} sx={{ color: theme.palette.primary.main }}>
               {value}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#BBDEFB' }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
               {label}
             </Typography>
             {subtitle && (
-              <Typography variant="caption" sx={{ color: '#90CAF9' }}>
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                 {subtitle}
               </Typography>
             )}
@@ -576,15 +576,17 @@ const WorkHistory = () => {
         textTransform: 'none',
         ...(timeFilter === filter
           ? {
-              background: 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #818CF8 0%, #6366F1 100%)'
+                : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
               color: '#FFFFFF',
             }
           : {
-              color: '#90CAF9',
-              borderColor: alpha('#90CAF9', 0.3),
+              color: theme.palette.primary.main,
+              borderColor: alpha(theme.palette.primary.main, 0.3),
               '&:hover': {
-                borderColor: '#90CAF9',
-                backgroundColor: alpha('#90CAF9', 0.1),
+                borderColor: theme.palette.primary.main,
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
               },
             }),
       }}
@@ -600,9 +602,11 @@ const WorkHistory = () => {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh',
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #1e293b 0%, #1a365d 100%)'
+          : 'linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%)',
       }}>
-        <CircularProgress sx={{ color: '#90CAF9' }} />
+        <CircularProgress sx={{ color: theme.palette.secondary.main }} />
       </Box>
     );
   }
@@ -611,7 +615,9 @@ const WorkHistory = () => {
     return (
       <Container maxWidth="xl" sx={{ 
         py: 4,
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(135deg, #1e293b 0%, #1a365d 100%)'
+          : 'linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%)',
         minHeight: '100vh',
       }}>
         <Alert
@@ -624,9 +630,9 @@ const WorkHistory = () => {
           sx={{
             borderRadius: 3,
             backdropFilter: 'blur(10px)',
-            background: alpha('#F44336', 0.1),
-            border: `1px solid ${alpha('#F44336', 0.3)}`,
-            color: '#FFCDD2',
+            background: alpha(theme.palette.error.main, 0.1),
+            border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
+            color: theme.palette.error.light,
           }}
         >
           {error}
@@ -638,9 +644,11 @@ const WorkHistory = () => {
   return (
     <Container maxWidth="xl" sx={{ 
       py: 4,
-      background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 100%)',
+      background: theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, #1e293b 0%, #1a365d 100%)'
+        : 'linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 100%)',
       minHeight: '100vh',
-      color: '#E3F2FD',
+      color: theme.palette.text.primary,
     }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -654,14 +662,16 @@ const WorkHistory = () => {
             fontWeight={800}
             gutterBottom
             sx={{
-              background: 'linear-gradient(135deg, #FFFFFF 0%, #90CAF9 100%)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #E0E7FF 0%, #818CF8 100%)'
+                : 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
             Work History
           </Typography>
-          <Typography variant="body1" sx={{ color: '#BBDEFB' }}>
+          <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
             Track your completed work and performance over time
           </Typography>
         </Box>
@@ -673,7 +683,7 @@ const WorkHistory = () => {
               icon={<History />}
               label="Total Tasks"
               value={stats.total}
-              color="#1976D2"
+              color={theme.palette.primary.main}
               subtitle={getTimeFilterLabel(timeFilter)}
             />
           </Grid>
@@ -682,7 +692,7 @@ const WorkHistory = () => {
               icon={<CheckCircle />}
               label="Completed"
               value={stats.completed}
-              color="#4CAF50"
+              color={theme.palette.success.main}
               subtitle="Approved by admin"
             />
           </Grid>
@@ -691,7 +701,7 @@ const WorkHistory = () => {
               icon={<Warning />}
               label="In Review"
               value={stats.inReview}
-              color="#FF9800"
+              color={theme.palette.warning.main}
               subtitle="Awaiting approval"
             />
           </Grid>
@@ -700,7 +710,7 @@ const WorkHistory = () => {
               icon={<Error />}
               label="Needs Revision"
               value={stats.needsRevision}
-              color="#F44336"
+              color={theme.palette.error.main}
               subtitle="Returned by admin"
             />
           </Grid>
@@ -709,7 +719,7 @@ const WorkHistory = () => {
               icon={<TimelineIcon />}
               label="Avg. Completion"
               value={`${stats.avgCompletionTime}d`}
-              color="#9C27B0"
+              color={theme.palette.secondary.main}
               subtitle="Days per task"
             />
           </Grid>
@@ -752,13 +762,13 @@ const WorkHistory = () => {
             sx={{
               mb: 2,
               '& .MuiTab-root': {
-                color: '#90CAF9',
+                color: theme.palette.text.secondary,
                 '&.Mui-selected': {
-                  color: '#FFFFFF',
+                  color: theme.palette.primary.main,
                 },
               },
               '& .MuiTabs-indicator': {
-                backgroundColor: '#90CAF9',
+                backgroundColor: theme.palette.primary.main,
               },
             }}
           >
@@ -776,7 +786,7 @@ const WorkHistory = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: '#90CAF9' }} />
+                    <Search sx={{ color: theme.palette.text.secondary }} />
                   </InputAdornment>
                 ),
               }}
@@ -784,30 +794,30 @@ const WorkHistory = () => {
                 flexGrow: 1,
                 maxWidth: 300,
                 '& .MuiOutlinedInput-root': {
-                  color: '#E3F2FD',
+                  color: theme.palette.text.primary,
                   '& fieldset': {
-                    borderColor: alpha('#90CAF9', 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
                   },
                   '&:hover fieldset': {
-                    borderColor: '#90CAF9',
+                    borderColor: theme.palette.primary.main,
                   },
                 },
               }}
             />
 
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel sx={{ color: '#90CAF9' }}>Status</InputLabel>
+              <InputLabel sx={{ color: theme.palette.primary.main }}>Status</InputLabel>
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 label="Status"
                 sx={{
-                  color: '#E3F2FD',
+                  color: theme.palette.text.primary,
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha('#90CAF9', 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#90CAF9',
+                    borderColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -821,18 +831,18 @@ const WorkHistory = () => {
             </FormControl>
 
             <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel sx={{ color: '#90CAF9' }}>Category</InputLabel>
+              <InputLabel sx={{ color: theme.palette.primary.main }}>Category</InputLabel>
               <Select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 label="Category"
                 sx={{
-                  color: '#E3F2FD',
+                  color: theme.palette.text.primary,
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha('#90CAF9', 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#90CAF9',
+                    borderColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -849,8 +859,8 @@ const WorkHistory = () => {
               startIcon={<Refresh />}
               onClick={fetchWorkHistory}
               sx={{
-                color: '#90CAF9',
-                borderColor: alpha('#90CAF9', 0.3),
+                color: theme.palette.primary.main,
+                borderColor: alpha(theme.palette.primary.main, 0.3),
               }}
               variant="outlined"
             >
@@ -866,8 +876,10 @@ const WorkHistory = () => {
             sx={{
               borderRadius: 3,
               backdropFilter: 'blur(10px)',
-              background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(13, 71, 161, 0.05) 100%)',
-              border: '1px solid rgba(66, 165, 245, 0.2)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               overflow: 'hidden',
             }}
           >
@@ -875,20 +887,20 @@ const WorkHistory = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Task</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Category</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Status</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Progress</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Assigned</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Completed</TableCell>
-                    <TableCell sx={{ color: '#90CAF9', fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Task</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Category</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Progress</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Assigned</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Completed</TableCell>
+                    <TableCell sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {filteredTasks.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
-                        <Typography variant="body2" sx={{ color: '#90CAF9' }}>
+                        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                           No tasks found for the selected filters
                         </Typography>
                       </TableCell>
@@ -927,7 +939,7 @@ const WorkHistory = () => {
                           hover 
                           sx={{ 
                             '&:hover': { 
-                              backgroundColor: alpha('#1976D2', 0.05),
+                              backgroundColor: alpha(theme.palette.primary.main, 0.05),
                               cursor: 'pointer'
                             },
                           }}
@@ -935,10 +947,10 @@ const WorkHistory = () => {
                         >
                           <TableCell>
                             <Box>
-                              <Typography variant="body2" fontWeight={500} sx={{ color: '#E3F2FD' }}>
+                              <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.primary.main }}>
                                 {task.title}
                               </Typography>
-                              <Typography variant="caption" sx={{ color: '#90CAF9' }}>
+                              <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                                 {task.description?.substring(0, 50)}...
                               </Typography>
                             </Box>
@@ -948,9 +960,9 @@ const WorkHistory = () => {
                               label={task.category}
                               size="small"
                               sx={{
-                                backgroundColor: alpha('#1976D2', 0.1),
-                                color: '#90CAF9',
-                                border: `1px solid ${alpha('#90CAF9', 0.3)}`,
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                color: theme.palette.primary.main,
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                               }}
                             />
                           </TableCell>
@@ -987,14 +999,14 @@ const WorkHistory = () => {
                             </Box>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ color: '#E3F2FD' }}>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
                               {format(parseISO(task.createdAt || task.assignedAt || task.date), 'MMM d')}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             {completionDate ? (
                               <Box>
-                                <Typography variant="body2" sx={{ color: '#E3F2FD' }}>
+                                <Typography variant="body2" sx={{ color: theme.palette.text.primary }}>
                                   {format(parseISO(completionDate), 'MMM d')}
                                 </Typography>
                                 {completionTime && (
@@ -1009,7 +1021,7 @@ const WorkHistory = () => {
                                 )}
                               </Box>
                             ) : (
-                              <Typography variant="caption" sx={{ color: '#FFA726' }}>
+                              <Typography variant="caption" sx={{ color: theme.palette.warning.main }}>
                                 {statusText === 'In Review' ? 'Awaiting review' : 'Not completed'}
                               </Typography>
                             )}
@@ -1022,9 +1034,9 @@ const WorkHistory = () => {
                                 handleViewTask(task);
                               }}
                               sx={{
-                                color: '#90CAF9',
+                                color: theme.palette.primary.main,
                                 '&:hover': {
-                                  backgroundColor: alpha('#90CAF9', 0.1),
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
                                 },
                               }}
                             >
@@ -1050,13 +1062,13 @@ const WorkHistory = () => {
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 rowsPerPageOptions={[5, 10, 25, 50]}
                 sx={{
-                  color: '#E3F2FD',
+                  color: theme.palette.text.primary,
                   '& .MuiTablePagination-selectIcon': {
-                    color: '#90CAF9',
+                    color: theme.palette.primary.main,
                   },
                   '& .MuiTablePagination-actions': {
                     '& .MuiIconButton-root': {
-                      color: '#90CAF9',
+                      color: theme.palette.primary.main,
                     },
                   },
                 }}
@@ -1070,17 +1082,19 @@ const WorkHistory = () => {
               p: 3,
               borderRadius: 3,
               backdropFilter: 'blur(10px)',
-              background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(13, 71, 161, 0.05) 100%)',
-              border: '1px solid rgba(66, 165, 245, 0.2)',
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)'
+                : 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
             }}
           >
-            <Typography variant="h6" sx={{ color: '#E3F2FD', mb: 3 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.primary.main, mb: 3 }}>
               Work Timeline
             </Typography>
             
             {filteredTasks.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body2" sx={{ color: '#90CAF9' }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   No tasks found for the selected filters
                 </Typography>
               </Box>
@@ -1108,7 +1122,7 @@ const WorkHistory = () => {
                     <TimelineItem key={task._id}>
                       <TimelineOppositeContent
                         sx={{ 
-                          color: '#90CAF9',
+                          color: theme.palette.text.secondary,
                           flex: 0.2,
                           textAlign: 'right',
                           pr: 2,
@@ -1118,12 +1132,12 @@ const WorkHistory = () => {
                           {format(parseISO(task.createdAt || task.assignedAt || task.date), 'MMM d, yyyy')}
                         </Typography>
                         {task.actualCompletion && (
-                          <Typography variant="caption" sx={{ display: 'block', color: '#BBDEFB' }}>
+                          <Typography variant="caption" sx={{ display: 'block', color: theme.palette.text.secondary }}>
                             Completed: {format(parseISO(task.actualCompletion), 'MMM d')}
                           </Typography>
                         )}
                         {task.approvedAt && (
-                          <Typography variant="caption" sx={{ display: 'block', color: '#4CAF50' }}>
+                          <Typography variant="caption" sx={{ display: 'block', color: theme.palette.success.main }}>
                             Approved: {format(parseISO(task.approvedAt), 'MMM d')}
                           </Typography>
                         )}
@@ -1145,23 +1159,23 @@ const WorkHistory = () => {
                           )}
                         </TimelineDot>
                         {index < filteredTasks.length - 1 && (
-                          <TimelineConnector sx={{ backgroundColor: alpha('#90CAF9', 0.3) }} />
+                          <TimelineConnector sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.3) }} />
                         )}
                       </TimelineSeparator>
                       <TimelineContent>
                         <Card
                           sx={{
-                            backgroundColor: alpha('#1565C0', 0.1),
-                            border: `1px solid ${alpha('#90CAF9', 0.3)}`,
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                             borderRadius: 2,
                             '&:hover': {
-                              backgroundColor: alpha('#1565C0', 0.2),
+                              backgroundColor: alpha(theme.palette.primary.main, 0.2),
                             },
                           }}
                         >
                           <CardContent sx={{ p: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                              <Typography variant="subtitle2" sx={{ color: '#E3F2FD' }}>
+                              <Typography variant="subtitle2" sx={{ color: theme.palette.primary.main }}>
                                 {task.title}
                               </Typography>
                               <Chip
@@ -1174,18 +1188,18 @@ const WorkHistory = () => {
                                 }}
                               />
                             </Box>
-                            <Typography variant="body2" sx={{ color: '#BBDEFB', mb: 1 }}>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
                               {task.category} • {task.severity}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: '#90CAF9' }}>
+                            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                               {task.description?.substring(0, 80)}...
                             </Typography>
                             
                             {/* Show additional info based on status */}
                             {(statusText === 'In Review') && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                                <Warning sx={{ fontSize: 16, color: '#FF9800' }} />
-                                <Typography variant="caption" sx={{ color: '#FF9800' }}>
+                                <Warning sx={{ fontSize: 16, color: theme.palette.warning.main }} />
+                                <Typography variant="caption" sx={{ color: theme.palette.warning.main }}>
                                   Awaiting admin approval
                                 </Typography>
                               </Box>
@@ -1193,8 +1207,8 @@ const WorkHistory = () => {
                             
                             {(statusText === 'Needs Revision' && task.rejectionReason) && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                                <ThumbDown sx={{ fontSize: 16, color: '#F44336' }} />
-                                <Typography variant="caption" sx={{ color: '#F44336' }}>
+                                <ThumbDown sx={{ fontSize: 16, color: theme.palette.error.main }} />
+                                <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
                                   {task.rejectionReason}
                                 </Typography>
                               </Box>
@@ -1202,8 +1216,8 @@ const WorkHistory = () => {
                             
                             {(statusText === 'Completed' && task.adminNotes) && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                                <ThumbUp sx={{ fontSize: 16, color: '#4CAF50' }} />
-                                <Typography variant="caption" sx={{ color: '#4CAF50' }}>
+                                <ThumbUp sx={{ fontSize: 16, color: theme.palette.success.main }} />
+                                <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
                                   {task.adminNotes}
                                 </Typography>
                               </Box>

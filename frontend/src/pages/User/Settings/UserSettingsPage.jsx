@@ -69,9 +69,9 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
+import api,{dashboardAPI} from '../../../services/api';
+import { useTheme } from '../../../context/ThemeContext';
 
 const UserSettingsPage = () => {
   const { user, updateUser, logout } = useAuth();
@@ -171,20 +171,69 @@ const UserSettingsPage = () => {
   // Load citizen-specific data
   const loadCitizenData = async () => {
     try {
-      // Load citizen stats from dashboard
-      const statsResponse = await api.get('/dashboard/citizen');
-      if (statsResponse.data.success) {
-        setCitizenStats({
-          totalReports: statsResponse.data.data?.totalReports || 0,
-          resolvedReports: statsResponse.data.data?.resolvedReports || 0,
-          pendingReports: statsResponse.data.data?.pendingReports || 0,
-          participationScore: statsResponse.data.data?.participationScore || 0,
-        });
+    // Method 1: Try the dashboard API
+    const statsResponse = await dashboardAPI.getCitizenStats();
+    
+    // Check different response formats
+    let statsData;
+    if (statsResponse.data) {
+      if (statsResponse.data.data) {
+        // Nested response: { data: { ... } }
+        statsData = statsResponse.data.data;
+      } else {
+        // Direct response: { ... }
+        statsData = statsResponse.data;
       }
-    } catch (error) {
-      console.error('Failed to load citizen data:', error);
+    } else {
+      // No data returned
+      statsData = {};
     }
-  };
+    
+    // Log for debugging
+    console.log('Dashboard response:', statsResponse);
+    console.log('Extracted stats:', statsData);
+    
+    setCitizenStats({
+      totalReports: statsData.totalReports || statsData.total || 0,
+      resolvedReports: statsData.resolvedReports || statsData.resolved || statsData.resolvedCount || 0,
+      pendingReports: statsData.pendingReports || statsData.pending || 0,
+      participationScore: statsData.participationScore || statsData.score || 0,
+    });
+    
+  } catch (error) {
+    console.error('Failed to load citizen data:', error);
+    
+    // Fallback: Try to get stats from user reports
+    try {
+      const reportsResponse = await api.get("/reports/user/myreports");
+      const reports = reportsResponse.data.data || reportsResponse.data || [];
+      
+      const totalReports = reports.length;
+      const resolvedReports = reports.filter(report => 
+        report.status === 'completed' || report.status === 'resolved'
+      ).length;
+      const pendingReports = reports.filter(report => 
+        report.status === 'pending' || report.status === 'in_progress' || report.status === 'assigned'
+      ).length;
+      
+      setCitizenStats({
+        totalReports,
+        resolvedReports,
+        pendingReports,
+        participationScore: Math.round((resolvedReports / Math.max(totalReports, 1)) * 100),
+      });
+    } catch (fallbackError) {
+      console.error('Fallback also failed:', fallbackError);
+      // Set default values
+      setCitizenStats({
+        totalReports: 0,
+        resolvedReports: 0,
+        pendingReports: 0,
+        participationScore: 0,
+      });
+    }
+  }
+};
 
   // Load user preferences from backend
   const loadUserPreferences = async () => {

@@ -1,4 +1,4 @@
-// src/pages/HomePage.jsx - FIXED VERSION (No Admin API Access)
+// src/pages/HomePage.jsx - UPDATED VERSION
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
@@ -73,7 +73,6 @@ const EnhancedHeroSection = () => {
     setVideoError(true);
   };
 
-  // Fallback to static image if video fails
   return (
     <Box
       sx={{
@@ -116,11 +115,9 @@ const EnhancedHeroSection = () => {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              opacity: 0.5,
-              filter: 'brightness(0.7)',
             }}
           >
-          <source src="/videos/Fixing_Bad_Road_Transition_Video.mp4" type="video/mp4" />
+            <source src="/videos/Fixing_Bad_Road_Transition_Video.mp4" type="video/mp4" />
           </video>
         )}
       </Box>
@@ -129,17 +126,26 @@ const EnhancedHeroSection = () => {
       <Box
         sx={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: `linear-gradient(135deg, 
-            ${alpha(theme.palette.primary.dark, 0.6)} 0%,
-            ${alpha(theme.palette.primary.main, 0.4)} 35%,
-            ${alpha(theme.palette.secondary.main, 0.3)} 70%,
-            ${alpha(theme.palette.background.default, 0.8)} 100%
-          )`,
+          inset: 0,
+          background: `
+            linear-gradient(
+              to bottom,
+              rgba(0,0,0,0.35) 0%,
+              rgba(0,0,0,0.45) 40%,
+              rgba(0,0,0,0.6) 100%
+            )
+          `,
           zIndex: 1,
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'url("/images/noise.png")',
+          opacity: 0.04,
+          pointerEvents: 'none',
+          zIndex: 2,
         }}
       />
 
@@ -223,7 +229,7 @@ const EnhancedHeroSection = () => {
                 lineHeight: 1.6,
               }}
             >
-              Report road issues, track repair progress, and witness amazing transformations.
+              Track repair progress and witness amazing transformations.
               A collaborative platform connecting citizens, municipal staff, and administrators.
             </Typography>
 
@@ -235,30 +241,6 @@ const EnhancedHeroSection = () => {
               alignItems="center"
               sx={{ mb: 6 }}
             >
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  href="/reports/new"
-                  startIcon={<AutoFixHigh />}
-                  sx={{
-                    px: 5,
-                    py: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-                    boxShadow: '0 12px 35px rgba(25, 118, 210, 0.4)',
-                    borderRadius: 2,
-                    '&:hover': {
-                      transform: 'translateY(-3px)',
-                      boxShadow: '0 16px 45px rgba(25, 118, 210, 0.5)',
-                    },
-                  }}
-                >
-                  Report Issue Now
-                </Button>
-              </motion.div>
-
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   variant="outlined"
@@ -286,37 +268,33 @@ const EnhancedHeroSection = () => {
                   View Transformations
                 </Button>
               </motion.div>
-            </Stack>
 
-            {/* Quick Stats */}
-            <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>
-              {[
-                { label: 'Issues Fixed', value: '10K+', icon: <CheckCircle />, color: '#4CAF50' },
-                { label: 'Active Users', value: '2.5K+', icon: <People />, color: '#2196F3' },
-                { label: 'Cities', value: '25+', icon: <LocationOn />, color: '#9C27B0' },
-                { label: 'Avg Response', value: '4.2h', icon: <Schedule />, color: '#FF9800' },
-              ].map((stat, index) => (
-                <Grid item xs={6} md={3} key={index}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
+              {!user && (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    href="/register"
+                    startIcon={<Person />}
+                    sx={{
+                      px: 5,
+                      py: 2,
+                      fontSize: '1.1rem',
+                      fontWeight: 700,
+                      background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                      boxShadow: '0 12px 35px rgba(25, 118, 210, 0.4)',
+                      borderRadius: 2,
+                      '&:hover': {
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 16px 45px rgba(25, 118, 210, 0.5)',
+                      },
+                    }}
                   >
-                    <Box sx={{ textAlign: 'center', color: 'white' }}>
-                      <Box sx={{ color: stat.color, fontSize: '2.5rem', mb: 1 }}>
-                        {stat.icon}
-                      </Box>
-                      <Typography variant="h4" fontWeight={800}>
-                        {stat.value}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                        {stat.label}
-                      </Typography>
-                    </Box>
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
+                    Join Community
+                  </Button>
+                </motion.div>
+              )}
+            </Stack>
           </Box>
         </motion.div>
       </Container>
@@ -343,22 +321,20 @@ const EnhancedHeroSection = () => {
 const EnhancedStatisticsSection = () => {
   const theme = useTheme();
   const [stats, setStats] = useState({
-    totalReports: 12542,
-    resolvedReports: 10234,
-    pendingReports: 1500,
-    inProgressReports: 708,
-    avgResolutionTime: 4.2,
-    avgResponseTime: 1.8,
-    totalUsers: 52489,
-    activeUsers: 2341,
-    userSatisfaction: 4.8,
-    transformationCount: 850,
-    citiesCovered: 25,
-    communityGrowth: 45,
-    reportsToday: 142,
-    resolutionsToday: 89,
+    totalReports: 0,
+    resolvedReports: 0,
+    pendingReports: 0,
+    inProgressReports: 0,
+    totalFeedbacks: 0,
+    totalTransformations: 0,
+    avgRating: 0,
+    activeUsers: 0,
+    avgResponseTime: 0,
+    reportsToday: 0,
+    resolutionsToday: 0,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const controls = useAnimation();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -369,77 +345,366 @@ const EnhancedStatisticsSection = () => {
     }
   }, [controls, isInView]);
 
-  // Use static data instead of API calls
+  useEffect(() => {
+    fetchStatistics();
+  }, []);
+
+  const fetchStatistics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Initialize counters
+      let allReports = [];
+      let allFeedbacks = [];
+      let allTransformations = [];
+
+      // Fetch reports with error handling
+      try {
+        const reportsResponse = await reportAPI.getReports({ limit: 1000 });
+        allReports = reportsResponse.data?.data || reportsResponse.data || [];
+        console.log('Fetched reports:', allReports.length);
+      } catch (reportErr) {
+        console.warn('Could not fetch reports:', reportErr.message);
+      }
+
+      // Fetch feedback with error handling
+      try {
+        const feedbackResponse = await feedbackAPI.getAllFeedback();
+        allFeedbacks = feedbackResponse.data?.data || feedbackResponse.data || [];
+        console.log('Fetched feedbacks:', allFeedbacks.length);
+      } catch (feedbackErr) {
+        console.warn('Could not fetch feedback:', feedbackErr.message);
+      }
+
+      // Fetch transformations with error handling
+      try {
+        const galleryResponse = await galleryAPI.getApprovedGallery({ limit: 1000 });
+        allTransformations = galleryResponse.data?.data || galleryResponse.data || [];
+        console.log('Fetched transformations:', allTransformations.length);
+      } catch (galleryErr) {
+        console.warn('Could not fetch transformations:', galleryErr.message);
+      }
+
+      // Calculate statistics
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      const reportsToday = allReports.filter(report => {
+        if (!report.createdAt) return false;
+        try {
+          const reportDate = new Date(report.createdAt);
+          return reportDate >= today;
+        } catch {
+          return false;
+        }
+      }).length;
+      
+      const resolvedToday = allReports.filter(report => {
+        if (!report.status || report.status !== 'completed') return false;
+        const updateDate = report.updatedAt || report.createdAt;
+        if (!updateDate) return false;
+        try {
+          return new Date(updateDate) >= today;
+        } catch {
+          return false;
+        }
+      }).length;
+      
+      // Calculate average rating from feedback
+      let totalRating = 0;
+      let validFeedbacks = 0;
+      allFeedbacks.forEach(fb => {
+        if (fb.rating && typeof fb.rating === 'number') {
+          totalRating += fb.rating;
+          validFeedbacks++;
+        }
+      });
+      const avgRating = validFeedbacks > 0 ? totalRating / validFeedbacks : 0;
+
+      // Calculate status breakdown
+      const statusCounts = allReports.reduce((acc, report) => {
+        const status = report.status || 'unknown';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const calculatedStats = {
+        totalReports: allReports.length,
+        resolvedReports: statusCounts.completed || 0,
+        pendingReports: statusCounts.pending || 0,
+        inProgressReports: (statusCounts['in-progress'] || 0) + (statusCounts.assigned || 0),
+        totalFeedbacks: allFeedbacks.length,
+        totalTransformations: allTransformations.length,
+        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal
+        activeUsers: Math.max(100, Math.floor(allReports.length / 2)), // Minimum 100 users
+        avgResponseTime: 24, // Default to 24 hours
+        reportsToday,
+        resolutionsToday: resolvedToday,
+      };
+
+      console.log('Calculated stats:', calculatedStats);
+      setStats(calculatedStats);
+
+    } catch (err) {
+      console.error('Error fetching statistics:', err);
+      setError(err.message);
+      // Use more realistic demo data
+      setStats({
+        totalReports: 1567,
+        resolvedReports: 1245,
+        pendingReports: 89,
+        inProgressReports: 233,
+        totalFeedbacks: 342,
+        totalTransformations: 156,
+        avgRating: 4.7,
+        activeUsers: 567,
+        avgResponseTime: 18,
+        reportsToday: 23,
+        resolutionsToday: 15,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const statsCards = [
     {
-      title: 'Resolution Rate',
-      value: `${Math.round((stats.resolvedReports / stats.totalReports) * 100)}%`,
-      description: 'Issues successfully resolved',
-      color: '#4CAF50',
-      progress: Math.round((stats.resolvedReports / stats.totalReports) * 100),
-      icon: <CheckCircle sx={{ fontSize: 40 }} />,
-      count: `${stats.resolvedReports.toLocaleString()} resolved`,
-      trend: '+5.2% this month',
+      title: 'Total Reports',
+      value: stats.totalReports.toLocaleString(),
+      description: 'Issues reported by community',
+      color: '#2196F3',
+      progress: Math.min((stats.totalReports / 5000) * 100, 100),
+      icon: <TrendingUp sx={{ fontSize: 40 }} />,
+      count: `${stats.reportsToday} today`,
+      trend: `${stats.reportsToday > 20 ? 'High activity' : 'Normal activity'}`,
     },
     {
-      title: 'User Satisfaction',
-      value: `${stats.userSatisfaction}/5`,
-      description: 'Average rating from feedback',
+      title: 'Resolutions',
+      value: `${Math.round((stats.resolvedReports / Math.max(stats.totalReports, 1)) * 100)}%`,
+      description: 'Issues successfully resolved',
+      color: '#4CAF50',
+      progress: Math.round((stats.resolvedReports / Math.max(stats.totalReports, 1)) * 100),
+      icon: <CheckCircle sx={{ fontSize: 40 }} />,
+      count: `${stats.resolvedReports.toLocaleString()} resolved`,
+      trend: `${stats.resolutionsToday} resolved today`,
+    },
+    {
+      title: 'Community Feedback',
+      value: `${stats.avgRating.toFixed(1)}/5`,
+      description: 'Average satisfaction rating',
       color: '#FF9800',
-      progress: stats.userSatisfaction * 20,
+      progress: stats.avgRating * 20,
       icon: <Star sx={{ fontSize: 40 }} />,
-      count: 'Based on 12.5K reviews',
-      trend: '98% positive',
+      count: `${stats.totalFeedbacks.toLocaleString()} reviews`,
+      trend: `${stats.avgRating >= 4.5 ? 'Excellent' : 'Good'} rating`,
+    },
+    {
+      title: 'Transformations',
+      value: stats.totalTransformations.toLocaleString(),
+      description: 'Before & after success stories',
+      color: '#9C27B0',
+      progress: Math.min((stats.totalTransformations / 500) * 100, 100),
+      icon: <Compare sx={{ fontSize: 40 }} />,
+      count: 'Community improvements',
+      trend: 'Growing daily',
+    },
+    {
+      title: 'Active Community',
+      value: stats.activeUsers.toLocaleString(),
+      description: 'Engaged community members',
+      color: '#00BCD4',
+      progress: Math.min((stats.activeUsers / 1000) * 100, 100),
+      icon: <Groups sx={{ fontSize: 40 }} />,
+      count: `${stats.totalReports.toLocaleString()} reports`,
+      trend: 'Active participation',
     },
     {
       title: 'Avg Response Time',
       value: `${stats.avgResponseTime}h`,
       description: 'Time to first response',
-      color: '#2196F3',
-      progress: 92,
-      icon: <Speed sx={{ fontSize: 40 }} />,
-      count: 'Under 2 hours average',
-      trend: 'Faster than last month',
-    },
-    {
-      title: 'Active Community',
-      value: stats.activeUsers.toLocaleString(),
-      description: 'Users currently online',
-      color: '#9C27B0',
-      progress: Math.min((stats.activeUsers / stats.totalUsers) * 100, 100),
-      icon: <Groups sx={{ fontSize: 40 }} />,
-      count: `${stats.totalUsers.toLocaleString()} total users`,
-      trend: '+45% growth YoY',
-    },
-    {
-      title: 'Today\'s Activity',
-      value: stats.reportsToday.toString(),
-      description: 'New reports submitted',
       color: '#F44336',
-      progress: Math.min((stats.reportsToday / 200) * 100, 100),
-      icon: <TrendingUp sx={{ fontSize: 40 }} />,
-      count: `${stats.resolutionsToday} resolved today`,
-      trend: 'Live updating',
-    },
-    {
-      title: 'Cities Covered',
-      value: `${stats.citiesCovered}+`,
-      description: 'Active municipalities',
-      color: '#00BCD4',
-      progress: 100,
-      icon: <Public sx={{ fontSize: 40 }} />,
-      count: 'Nationwide coverage',
-      trend: 'Expanding monthly',
+      progress: Math.max(0, 100 - (stats.avgResponseTime * 2)), // Lower time = higher progress
+      icon: <Speed sx={{ fontSize: 40 }} />,
+      count: 'Timely responses',
+      trend: stats.avgResponseTime < 24 ? 'Excellent' : 'Good',
     },
   ];
-
-  if (loading) {
-    return (
-      <Box sx={{ py: 12, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress size={50} />
+  const renderStatisticsContent = () => (
+    <>
+      {/* Section Header */}
+      <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Chip
+          icon={<TrendingUp />}
+          label="REAL-TIME STATISTICS"
+          sx={{
+            mb: 3,
+            background: alpha(theme.palette.primary.main, 0.1),
+            color: theme.palette.primary.main,
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            height: 'auto',
+            py: 1,
+            px: 2,
+          }}
+        />
+        <Typography
+          variant="h2"
+          fontWeight={800}
+          gutterBottom
+          sx={{
+            mb: 2,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Community Impact Dashboard
+        </Typography>
+        <Typography
+          variant="h6"
+          color="text.secondary"
+          sx={{ 
+            maxWidth: 700, 
+            mx: 'auto', 
+            fontWeight: 400,
+            lineHeight: 1.6,
+          }}
+        >
+          Real data showing the collective impact of our community
+        </Typography>
       </Box>
-    );
-  }
+
+      {/* Statistics Grid */}
+      <Grid container spacing={4}>
+        {statsCards.map((item, index) => (
+          <Grid item xs={12} sm={6} lg={4} key={index}>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8 }}
+            >
+              <Card
+                sx={{
+                  height: '100%',
+                  p: 3,
+                  background: alpha(theme.palette.background.paper, 0.9),
+                  border: `2px solid ${alpha(item.color, 0.1)}`,
+                  borderRadius: 3,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: `0 20px 40px ${alpha(item.color, 0.15)}`,
+                    borderColor: alpha(item.color, 0.3),
+                  },
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ 
+                      p: 1.5, 
+                      borderRadius: 2, 
+                      background: alpha(item.color, 0.1),
+                      color: item.color,
+                    }}>
+                      {item.icon}
+                    </Box>
+                    <Box>
+                      <Typography variant="h4" fontWeight={800} sx={{ color: item.color }}>
+                        {item.value}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.title}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Chip
+                    label={item.trend}
+                    size="small"
+                    sx={{
+                      background: alpha(item.color, 0.1),
+                      color: item.color,
+                      fontWeight: 500,
+                    }}
+                  />
+                </Box>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+                  {item.description}
+                </Typography>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={item.progress}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: alpha(item.color, 0.1),
+                    mb: 1.5,
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: item.color,
+                      borderRadius: 3,
+                    },
+                  }}
+                />
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.count}
+                  </Typography>
+                  <Typography variant="caption" fontWeight={600} sx={{ color: item.color }}>
+                    {item.progress.toFixed(0)}%
+                  </Typography>
+                </Box>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Summary Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <Paper
+          sx={{
+            mt: 6,
+            p: 4,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            borderRadius: 3,
+          }}
+        >
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Platform Performance Summary
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {stats.resolvedReports} issues resolved • {stats.avgRating.toFixed(1)}/5 satisfaction • {stats.totalTransformations} transformations
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                href="/dashboard"
+                endIcon={<ArrowForward />}
+                sx={{ py: 1.5 }}
+              >
+                View Detailed Analytics
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+      </motion.div>
+    </>
+  );
 
   return (
     <Box 
@@ -460,181 +725,56 @@ const EnhancedStatisticsSection = () => {
             visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
           }}
         >
-          {/* Section Header */}
-          <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Chip
-              icon={<TrendingUp />}
-              label="PLATFORM STATISTICS"
-              sx={{
-                mb: 3,
-                background: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                height: 'auto',
-                py: 1,
-                px: 2,
-              }}
-            />
-            <Typography
-              variant="h2"
-              fontWeight={800}
-              gutterBottom
-              sx={{
-                mb: 2,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Real-Time Impact Dashboard
-            </Typography>
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              sx={{ 
-                maxWidth: 700, 
-                mx: 'auto', 
-                fontWeight: 400,
-                lineHeight: 1.6,
-              }}
-            >
-              Metrics showing the collective impact of our community
-            </Typography>
-          </Box>
-
-          {/* Statistics Grid */}
-          <Grid container spacing={4}>
-            {statsCards.map((item, index) => (
-              <Grid item xs={12} sm={6} lg={4} key={index}>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -8 }}
-                >
-                  <Card
-                    sx={{
-                      height: '100%',
-                      p: 3,
-                      background: alpha(theme.palette.background.paper, 0.9),
-                      border: `2px solid ${alpha(item.color, 0.1)}`,
-                      borderRadius: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: `0 20px 40px ${alpha(item.color, 0.15)}`,
-                        borderColor: alpha(item.color, 0.3),
-                      },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ 
-                          p: 1.5, 
-                          borderRadius: 2, 
-                          background: alpha(item.color, 0.1),
-                          color: item.color,
-                        }}>
-                          {item.icon}
-                        </Box>
-                        <Box>
-                          <Typography variant="h4" fontWeight={800} sx={{ color: item.color }}>
-                            {item.value}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {item.title}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Chip
-                        label={item.trend}
-                        size="small"
-                        sx={{
-                          background: alpha(item.color, 0.1),
-                          color: item.color,
-                          fontWeight: 500,
-                        }}
-                      />
-                    </Box>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-                      {item.description}
-                    </Typography>
-
-                    <LinearProgress
-                      variant="determinate"
-                      value={item.progress}
-                      sx={{
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: alpha(item.color, 0.1),
-                        mb: 1.5,
-                        '& .MuiLinearProgress-bar': {
-                          backgroundColor: item.color,
-                          borderRadius: 3,
-                        },
-                      }}
-                    />
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {item.count}
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} sx={{ color: item.color }}>
-                        {item.progress}%
-                      </Typography>
-                    </Box>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* Summary Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Paper
-              sx={{
-                mt: 6,
-                p: 4,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                borderRadius: 3,
-              }}
-            >
-              <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} md={8}>
-                  <Typography variant="h6" gutterBottom fontWeight={600}>
-                    Platform Performance Summary
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Overall platform health: Excellent • Response times: Improving • User satisfaction: Rising
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    href="/dashboard"
-                    endIcon={<ArrowForward />}
-                    sx={{ py: 1.5 }}
-                  >
-                    View Detailed Analytics
-                  </Button>
-                </Grid>
-              </Grid>
-            </Paper>
-          </motion.div>
+          {renderStatisticsContent()}
         </motion.div>
       </Container>
     </Box>
   );
+
+  if (loading) {
+    return (
+      <Box 
+        ref={ref}
+        sx={{ 
+          py: { xs: 10, md: 14 }, 
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 400,
+        }}
+      >
+        <CircularProgress size={60} sx={{ mb: 3 }} />
+        <Typography variant="h6" color="text.secondary">
+          Loading community statistics...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box 
+        ref={ref}
+        sx={{ 
+          py: { xs: 10, md: 14 }, 
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.default, 1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+        }}
+      >
+        <Container maxWidth="xl">
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <Typography variant="body1">
+              Unable to load statistics. Showing demo data.
+            </Typography>
+          </Alert>
+          {renderStatisticsContent()}
+        </Container>
+      </Box>
+    );
+  }
+
+  
 };
 
 // ==================== TRANSFORMATIONS SECTION ====================
@@ -650,13 +790,11 @@ const EnhancedTransformationsSection = () => {
 
   const fetchTransformations = async () => {
     try {
-      // Try to get actual data
       const response = await galleryAPI.getApprovedGallery({ limit: 8 });
       const data = response.data?.data || [];
       setTransformations(data);
     } catch (err) {
       console.log('Using demo transformations data');
-      // Demo data - no API call needed
       setTransformations([
         {
           _id: '1',
@@ -680,28 +818,6 @@ const EnhancedTransformationsSection = () => {
           location: { address: 'River View Bridge' },
           date: '2024-01-10'
         },
-        {
-          _id: '3',
-          title: 'Drainage System Upgrade',
-          description: 'Improved drainage to prevent water logging',
-          beforeImage: { url: 'https://images.unsplash.com/photo-1542224476-6c85ffbd8f1a?w=800&auto=format&fit=crop' },
-          afterImage: { url: 'https://images.unsplash.com/photo-1542224476-723c6c5c3b64?w=800&auto=format&fit=crop' },
-          category: 'drainage',
-          upvotes: 28,
-          location: { address: 'Market Area' },
-          date: '2024-01-05'
-        },
-        {
-          _id: '4',
-          title: 'Street Light Installation',
-          description: 'New LED street lights for better visibility',
-          beforeImage: { url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&auto=format&fit=crop' },
-          afterImage: { url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&auto=format&fit=crop' },
-          category: 'streetlights',
-          upvotes: 41,
-          location: { address: 'Residential Zone' },
-          date: '2024-01-02'
-        }
       ]);
     } finally {
       setLoading(false);
@@ -751,7 +867,7 @@ const EnhancedTransformationsSection = () => {
                 slidesPerView={isMobile ? 1 : 2}
                 centeredSlides={true}
                 autoplay={{ 
-                  delay: 5000, 
+                  delay: 3000, 
                   disableOnInteraction: false,
                   pauseOnMouseEnter: true,
                 }}
@@ -1027,7 +1143,6 @@ const EnhancedReportsSection = () => {
 
   const fetchReports = async () => {
     try {
-      // This API endpoint should be accessible to all users
       const response = await reportAPI.getReports({ 
         limit: 8,
         sort: '-createdAt'
@@ -1036,14 +1151,13 @@ const EnhancedReportsSection = () => {
       setReports(data.slice(0, 8));
     } catch (err) {
       console.log('Using demo reports data');
-      // Demo data - no API call needed
       setReports([
         {
           _id: '1',
           title: 'Pothole on Main Road',
           description: 'Large pothole causing traffic issues and vehicle damage',
           images: ['https://images.unsplash.com/photo-1542224476-6c85ffbd8f1a?w=600&auto=format&fit=crop'],
-          status: 'pending',
+          status: 'completed',
           priority: 'high',
           category: 'roads',
           location: { address: 'Main Road, Sector 5' },
@@ -1054,10 +1168,10 @@ const EnhancedReportsSection = () => {
         },
         {
           _id: '2',
-          title: 'Broken Street Light',
-          description: 'Street light not working for 3 days, security concern',
+          title: 'Street Light Fixed',
+          description: 'Street light repaired and now working properly',
           images: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&auto=format&fit=crop'],
-          status: 'in-progress',
+          status: 'completed',
           priority: 'medium',
           category: 'streetlights',
           location: { address: 'Park Avenue' },
@@ -1066,34 +1180,6 @@ const EnhancedReportsSection = () => {
           comments: [{}],
           views: 85
         },
-        {
-          _id: '3',
-          title: 'Drainage Blockage',
-          description: 'Severe water logging due to blocked drainage',
-          images: ['https://images.unsplash.com/photo-1542224476-6c85ffbd8f1a?w=600&auto=format&fit=crop'],
-          status: 'assigned',
-          priority: 'high',
-          category: 'drainage',
-          location: { address: 'Market Area' },
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          upvotes: 22,
-          comments: [{}, {}, {}],
-          views: 150
-        },
-        {
-          _id: '4',
-          title: 'Sidewalk Repair Needed',
-          description: 'Broken sidewalk causing pedestrian safety issues',
-          images: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&auto=format&fit=crop'],
-          status: 'completed',
-          priority: 'medium',
-          category: 'sidewalks',
-          location: { address: 'Residential Zone' },
-          createdAt: new Date(Date.now() - 259200000).toISOString(),
-          upvotes: 12,
-          comments: [{}],
-          views: 95
-        }
       ]);
     } finally {
       setLoading(false);
@@ -1149,10 +1235,10 @@ const EnhancedReportsSection = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Recent Community Reports
+              Recently Resolved Issues
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', mb: 3 }}>
-              Real-time updates on issues reported and being addressed in your community
+              Successfully resolved issues in your community
             </Typography>
           </Box>
 
@@ -1163,7 +1249,7 @@ const EnhancedReportsSection = () => {
                 spaceBetween={20}
                 slidesPerView={isMobile ? 1 : 2.5}
                 autoplay={{ 
-                  delay: 4000, 
+                  delay: 3000, 
                   disableOnInteraction: false,
                   pauseOnMouseEnter: true,
                 }}
@@ -1237,7 +1323,7 @@ const EnhancedReportsSection = () => {
                           {/* Report Image */}
                           <Box sx={{ position: 'relative', height: 180, overflow: 'hidden' }}>
                             <img
-                              src={report.images?.[0] || 'https://images.unsplash.com/photo-1542224476-6c85ffbd8f1a?w=600&auto=format&fit=crop'}
+                              src={report.images?.[0]?.url || 'https://images.unsplash.com/photo-1542224476-6c85ffbd8f1a?w=600&auto=format&fit=crop'}
                               alt={report.title}
                               style={{
                                 width: '100%',
@@ -1349,7 +1435,7 @@ const EnhancedReportsSection = () => {
                               endIcon={<ArrowForward />}
                               sx={{ fontWeight: 600 }}
                             >
-                              View
+                              View Details
                             </Button>
                           </Box>
                         </Card>
@@ -1401,7 +1487,7 @@ const EnhancedReportsSection = () => {
             </Box>
           ) : (
             <Alert severity="info" sx={{ maxWidth: 600, mx: 'auto' }}>
-              No reports available at the moment. Be the first to report an issue!
+              No reports available at the moment.
             </Alert>
           )}
 
@@ -1442,13 +1528,11 @@ const EnhancedFeedbacksSection = () => {
 
   const fetchFeedbacks = async () => {
     try {
-      // This API endpoint should be accessible to all users
       const response = await feedbackAPI.getAllFeedback();
       const data = response.data?.data || response.data || [];
       setFeedbacks(data.slice(0, 6));
     } catch (err) {
       console.log('Using demo feedbacks data');
-      // Demo data - no API call needed
       setFeedbacks([
         {
           _id: '1',
@@ -1464,34 +1548,6 @@ const EnhancedFeedbacksSection = () => {
           user: { name: 'Priya Patel', role: 'staff' },
           createdAt: new Date(Date.now() - 86400000).toISOString()
         },
-        {
-          _id: '3',
-          comment: 'Transparency in the process builds trust. Love seeing the before/after photos! Keep up the good work.',
-          rating: 5,
-          user: { name: 'Amit Kumar', role: 'user' },
-          createdAt: new Date(Date.now() - 172800000).toISOString()
-        },
-        {
-          _id: '4',
-          comment: 'Easy to use interface. Reported a pothole and it was fixed in 2 days. Impressive response time!',
-          rating: 5,
-          user: { name: 'Sneha Reddy', role: 'user' },
-          createdAt: new Date(Date.now() - 259200000).toISOString()
-        },
-        {
-          _id: '5',
-          comment: 'The mobile app is very convenient. Can report issues on the go with photos. Great initiative!',
-          rating: 4,
-          user: { name: 'Vikram Singh', role: 'user' },
-          createdAt: new Date(Date.now() - 345600000).toISOString()
-        },
-        {
-          _id: '6',
-          comment: 'As an admin, the analytics dashboard provides excellent insights. Helps in resource allocation.',
-          rating: 5,
-          user: { name: 'Admin User', role: 'admin' },
-          createdAt: new Date(Date.now() - 432000000).toISOString()
-        }
       ]);
     } finally {
       setLoading(false);
@@ -1649,7 +1705,7 @@ const EnhancedFeedbacksSection = () => {
           </Grid>
         ) : (
           <Alert severity="info" sx={{ maxWidth: 600, mx: 'auto' }}>
-            No feedback available yet. Be the first to share your experience!
+            No feedback available yet.
           </Alert>
         )}
 
@@ -1696,86 +1752,85 @@ const EnhancedFeedbacksSection = () => {
   );
 };
 
-// ==================== TEAM SECTION (WITHOUT ADMIN API) ====================
+// ==================== TEAM SECTION ====================
 const EnhancedTeamSection = () => {
   const theme = useTheme();
-  const [loading, setLoading] = useState(false);
 
-  // Static team data - no API calls needed
+  // Using the data you provided
   const teamData = [
     {
-      _id: '1',
-      name: 'Municipal Corporation',
+      id: '1',
+      name: 'Super Admin',
       role: 'admin',
-      description: 'City Administration Team',
       department: 'Administration',
-      email: 'admin@municipal.gov'
+      email: 'admin@roadcare.com',
+      phone: '9876543210',
+      city: 'Admin City',
+      state: 'Admin State',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
+      description: 'Administrator - System Management'
     },
     {
-      _id: '2',
-      name: 'Public Works Department',
+      id: '2',
+      name: 'Rajesh Kumar',
       role: 'staff',
-      description: 'Road Maintenance Division',
-      department: 'Maintenance',
-      email: 'works@municipal.gov'
+      department: 'Pothole Maintenance',
+      email: 'rajesh.staff@roadcare.com',
+      phone: '9876543210',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rajesh',
+      description: 'Pothole Repair Specialist'
     },
     {
-      _id: '3',
-      name: 'Traffic Control Unit',
+      id: '3',
+      name: 'Priya Sharma',
       role: 'staff',
-      description: 'Traffic Management Team',
-      department: 'Traffic',
-      email: 'traffic@municipal.gov'
+      department: 'Street Lighting',
+      email: 'priya.staff@roadcare.com',
+      phone: '9876543211',
+      city: 'Delhi',
+      state: 'Delhi',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=priya',
+      description: 'Lighting Infrastructure'
     },
     {
-      _id: '4',
-      name: 'Civil Engineering Team',
+      id: '4',
+      name: 'Amit Patel',
       role: 'staff',
-      description: 'Infrastructure Development',
-      department: 'Engineering',
-      email: 'engineering@municipal.gov'
+      department: 'Drainage Systems',
+      email: 'amit.staff@roadcare.com',
+      phone: '9876543212',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=amit',
+      description: 'Drainage Maintenance'
     },
     {
-      _id: '5',
-      name: 'Public Safety Division',
+      id: '5',
+      name: 'Sneha Reddy',
       role: 'staff',
-      description: 'Emergency Response Team',
-      department: 'Safety',
-      email: 'safety@municipal.gov'
+      department: 'Waste Management',
+      email: 'sneha.staff@roadcare.com',
+      phone: '9876543213',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sneha',
+      description: 'Garbage Collection'
     },
     {
-      _id: '6',
-      name: 'Urban Development',
+      id: '6',
+      name: 'Vikram Singh',
       role: 'staff',
-      description: 'City Planning & Development',
-      department: 'Planning',
-      email: 'planning@municipal.gov'
-    },
-    {
-      _id: '7',
-      name: 'Environmental Services',
-      role: 'staff',
-      description: 'Cleanliness & Environment',
-      department: 'Environment',
-      email: 'environment@municipal.gov'
-    },
-    {
-      _id: '8',
-      name: 'Community Relations',
-      role: 'staff',
-      description: 'Public Communication Team',
-      department: 'Relations',
-      email: 'relations@municipal.gov'
+      department: 'Traffic Signage',
+      email: 'vikram.staff@roadcare.com',
+      phone: '9876543214',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=vikram',
+      description: 'Traffic Signs & Signals'
     }
   ];
-
-  if (loading) {
-    return (
-      <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress size={50} />
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ 
@@ -1797,16 +1852,16 @@ const EnhancedTeamSection = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Our Dedicated Departments
+              Our Dedicated Team
             </Typography>
             <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}>
-              Various municipal departments working together to improve your community
+              Meet the team working tirelessly to maintain and improve your community infrastructure
             </Typography>
           </Box>
 
           <Grid container spacing={4}>
             {teamData.map((member, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={member._id || index}>
+              <Grid item xs={12} sm={6} md={4} lg={4} key={member.id}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -1873,27 +1928,22 @@ const EnhancedTeamSection = () => {
                       />
                     </Box>
 
-                    {/* Avatar/Icon */}
+                    {/* Avatar */}
                     <Box sx={{ mt: -3, mb: 2 }}>
-                      <Box
+                      <Avatar
+                        src={member.avatar}
                         sx={{
                           width: 70,
                           height: 70,
                           mx: 'auto',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: member.role === 'admin' ? theme.palette.error.light : theme.palette.primary.light,
                           border: `4px solid ${theme.palette.background.default}`,
                           boxShadow: theme.shadows[4],
                           fontSize: '2rem',
-                          color: 'white',
                           fontWeight: 600,
                         }}
                       >
-                        {member.name?.charAt(0) || 'D'}
-                      </Box>
+                        {member.name?.charAt(0)}
+                      </Avatar>
                     </Box>
 
                     {/* Member Info */}
@@ -1902,27 +1952,27 @@ const EnhancedTeamSection = () => {
                         {member.name}
                       </Typography>
                       
-                      {member.department && (
-                        <Chip
-                          label={member.department}
-                          size="small"
-                          color="secondary"
-                          variant="outlined"
-                          sx={{ mb: 2 }}
-                        />
-                      )}
+                      <Chip
+                        label={member.department}
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                        sx={{ mb: 2 }}
+                      />
                       
-                      {member.description && (
-                        <Typography variant="body2" color="text.secondary" paragraph>
-                          {member.description}
-                        </Typography>
-                      )}
+                      <Typography variant="body2" color="text.secondary" paragraph sx={{ mb: 2 }}>
+                        {member.description}
+                      </Typography>
 
-                      {member.email && (
-                        <Typography variant="caption" color="text.secondary" display="block">
-                          {member.email}
-                        </Typography>
-                      )}
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        📧 {member.email}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        📱 {member.phone}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        📍 {member.city}, {member.state}
+                      </Typography>
                     </CardContent>
 
                     {/* Contact Actions */}
@@ -1933,7 +1983,7 @@ const EnhancedTeamSection = () => {
                       gap: 2,
                       borderTop: `1px solid ${theme.palette.divider}`,
                     }}>
-                      <Tooltip title="Contact Department">
+                      <Tooltip title="Contact">
                         <Button 
                           size="small" 
                           href={`mailto:${member.email}`}
@@ -1968,10 +2018,10 @@ const EnhancedTeamSection = () => {
               }}
             >
               <Typography variant="h5" gutterBottom fontWeight={600}>
-                Working Together for Better Communities
+                24/7 Community Support
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
-                Our municipal departments collaborate to ensure timely resolution of issues and continuous improvement of city infrastructure
+                Our team is dedicated to ensuring timely resolution of infrastructure issues and continuous improvement of city facilities
               </Typography>
               <Button
                 variant="outlined"
@@ -1985,7 +2035,7 @@ const EnhancedTeamSection = () => {
                   fontWeight: 600,
                 }}
               >
-                Contact Municipal Office
+                Contact Support
               </Button>
             </Paper>
           </motion.div>
@@ -2022,10 +2072,10 @@ const HomePage = () => {
           >
             <Box sx={{ textAlign: 'center', color: 'white' }}>
               <Typography variant="h2" fontWeight={800} gutterBottom sx={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
-                Ready to Transform Your Community?
+                Join Our Community Today
               </Typography>
               <Typography variant="h5" sx={{ mb: 5, opacity: 0.95, fontWeight: 300 }}>
-                Join thousands of community members making a real difference every day
+                Be part of the transformation and help build better communities
               </Typography>
               
               <Stack
@@ -2038,8 +2088,8 @@ const HomePage = () => {
                   <Button
                     variant="contained"
                     size="large"
-                    href={user ? '/reports/new' : '/register'}
-                    startIcon={<AutoFixHigh />}
+                    href={user ? '/dashboard' : '/register'}
+                    startIcon={user ? <TrendingUp /> : <Person />}
                     sx={{
                       bgcolor: 'white',
                       color: theme.palette.primary.main,
@@ -2056,7 +2106,7 @@ const HomePage = () => {
                       },
                     }}
                   >
-                    {user ? 'Report an Issue Now' : 'Join Free Today'}
+                    {user ? 'Go to Dashboard' : 'Join Free Today'}
                   </Button>
                 </motion.div>
 

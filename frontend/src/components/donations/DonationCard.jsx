@@ -84,20 +84,22 @@ const DonationCard = ({ donation }) => {
                 height: 56,
                 bgcolor: donation.anonymous 
                   ? theme.palette.grey[500] 
-                  : theme.palette.primary.main,
+                  : (donation.avatarColor || theme.palette.primary.main),
                 fontSize: 20,
                 fontWeight: 600,
               }}
             >
-              {donation.anonymous ? 'A' : donation.name?.charAt(0)}
+              {donation.anonymous ? '😊' : (donation.name?.charAt(0) || 'D')}
             </Avatar>
             <Box sx={{ flex: 1 }}>
               <Typography variant="h6" fontWeight={600}>
-                {donation.anonymous ? 'Anonymous Donor' : donation.name}
+                {donation.anonymous ? 'Anonymous Supporter' : (donation.name || 'Donor')}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {!donation.anonymous && donation.email}
-              </Typography>
+              {!donation.anonymous && donation.email && (
+                <Typography variant="body2" color="text.secondary">
+                  {donation.email}
+                </Typography>
+              )}
             </Box>
             <IconButton size="small">
               <MoreVert />

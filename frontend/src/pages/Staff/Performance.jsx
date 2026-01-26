@@ -125,19 +125,19 @@ const Performance = () => {
         { 
           category: 'Completed', 
           value: completedTasks.length, 
-          color: '#4CAF50',
+          color: theme.palette.success.main,
           percentage: tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0
         },
         { 
           category: 'In Progress', 
           value: inProgressTasks.length, 
-          color: '#2196F3',
+          color: theme.palette.info.main,
           percentage: tasks.length > 0 ? Math.round((inProgressTasks.length / tasks.length) * 100) : 0
         },
         { 
           category: 'Pending', 
           value: pendingTasks.length, 
-          color: '#FF9800',
+          color: theme.palette.warning.main,
           percentage: tasks.length > 0 ? Math.round((pendingTasks.length / tasks.length) * 100) : 0
         }
       ];
@@ -592,10 +592,10 @@ const Performance = () => {
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#2196F3" 
+                  stroke={theme.palette.info.main} 
                   strokeWidth={3}
                   name="Productivity %"
-                  dot={{ stroke: '#2196F3', strokeWidth: 2, r: 4 }}
+                  dot={{ stroke: theme.palette.info.main, strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>

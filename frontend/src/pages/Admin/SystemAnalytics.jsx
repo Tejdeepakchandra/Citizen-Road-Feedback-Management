@@ -632,8 +632,8 @@ const SystemAnalytics = () => {
                 label={`${Math.abs(change)}%`}
                 size="small"
                 sx={{
-                  backgroundColor: change > 0 ? alpha('#10B981', 0.2) : alpha('#EF4444', 0.2),
-                  color: change > 0 ? '#10B981' : '#EF4444',
+                  backgroundColor: change > 0 ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.error.main, 0.2),
+                  color: change > 0 ? theme.palette.success.main : theme.palette.error.main,
                   fontWeight: 600,
                 }}
               />
@@ -726,7 +726,9 @@ const SystemAnalytics = () => {
                 variant="h6" 
                 fontWeight={600}
                 sx={{
-                  background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                    : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -780,7 +782,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -875,7 +879,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -933,7 +939,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -965,7 +973,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1009,7 +1019,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1053,7 +1065,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1098,7 +1112,9 @@ const SystemAnalytics = () => {
               fontWeight={600}
               gutterBottom
               sx={{
-                background: 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #818CF8 30%, #A5B4FC 100%)'
+                  : 'linear-gradient(45deg, #fff 30%, #a5b4fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1215,7 +1231,9 @@ const SystemAnalytics = () => {
               variant="h4" 
               fontWeight={800}
               sx={{
-                background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, #818CF8 0%, #38BDF8 100%)'
+                  : 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -1251,7 +1269,9 @@ const SystemAnalytics = () => {
                 startIcon={<Refresh />}
                 onClick={fetchAnalytics}
                 sx={{
-                  background: 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #818CF8 0%, #38BDF8 100%)'
+                    : 'linear-gradient(135deg, #6366F1 0%, #0EA5E9 100%)',
                   boxShadow: '0 8px 32px rgba(99, 102, 241, 0.4)',
                 }}
               >

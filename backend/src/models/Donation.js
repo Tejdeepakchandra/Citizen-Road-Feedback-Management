@@ -6,6 +6,24 @@ const DonationSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  name: {
+    type: String,
+    required: true,
+    default: 'Anonymous'
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  anonymous: {
+    type: Boolean,
+    default: false
+  },
+  cause: {
+    type: String,
+    enum: ['general', 'pothole', 'lighting', 'greenery', 'safety'],
+    default: 'general'
+  },
   orderId: {
     type: String,
     required: true,
@@ -39,7 +57,6 @@ const DonationSchema = new mongoose.Schema({
   bank: String,
   wallet: String,
   vpa: String,
-  email: String,
   contact: String,
   fee: Number,
   tax: Number,

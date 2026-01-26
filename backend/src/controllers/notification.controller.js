@@ -1,9 +1,11 @@
+const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendEmail } = require('../services/email.service');
-const { emitToSocket } = require('../services/socket.service');
+const { emitToSocket, emitToUser } = require('../services/socket.service');
+const notificationEmitter = require('../services/notificationEmitter.service');
 
 // @desc    Get user notifications
 // @route   GET /api/notifications
@@ -11,11 +13,41 @@ const { emitToSocket } = require('../services/socket.service');
 exports.getNotifications = asyncHandler(async (req, res, next) => {
   const { page = 1, limit = 20, unreadOnly = false } = req.query;
   
+  console.log('\n=== 🔔 NOTIFICATION FETCH REQUEST ===');
+  console.log('🔍 Fetching notifications for user:', {
+    userId: req.user.id,
+    userId_toString: req.user.id.toString(),
+    userId_type: typeof req.user.id,
+    userId_isObjectId: mongoose.Types.ObjectId.isValid(req.user.id),
+    user_name: req.user.name,
+    user_role: req.user.role,
+    page,
+    limit,
+    unreadOnly
+  });
+  
   let query = { recipient: req.user.id };
   
   if (unreadOnly === 'true') {
     query.read = false;
   }
+
+  console.log('📋 Query being used:', { 
+    recipient_value: query.recipient.toString(),
+    recipient_type: typeof query.recipient,
+    recipient_valid: mongoose.Types.ObjectId.isValid(query.recipient),
+    full_query: JSON.stringify(query)
+  });
+
+  // Debug: Find ALL notifications to see what's in DB  
+  const allNotifications = await Notification.find({}).select('recipient type title').limit(10);
+  console.log('🔎 ALL notifications in DB (sample of 10):', allNotifications.map(n => ({
+    _id: n._id.toString(),
+    recipient: n.recipient.toString(),
+    recipient_type: typeof n.recipient,
+    type: n.type,
+    title: n.title
+  })));
 
   const skip = (page - 1) * limit;
 
@@ -25,11 +57,47 @@ exports.getNotifications = asyncHandler(async (req, res, next) => {
     .skip(skip)
     .limit(parseInt(limit));
 
+  console.log('📊 Query result:', {
+    query_recipient: query.recipient.toString(),
+    found_count: notifications.length,
+    skip: skip,
+    limit: parseInt(limit),
+    matching_yes_or_no: notifications.length > 0 ? '✅ YES' : '❌ NO'
+  });
+
+  if (notifications.length > 0) {
+    console.log('✅ MATCH FOUND! First 3 notifications:', notifications.slice(0, 3).map(n => ({
+      notif_id: n._id.toString(),
+      recipient: n.recipient.toString(),
+      recipient_matches_query: n.recipient.toString() === query.recipient.toString(),
+      type: n.type,
+      title: n.title,
+      created: n.createdAt
+    })));
+  } else {
+    console.log('❌ NO MATCH! - No notifications found for user', query.recipient.toString());
+    console.log('   Checking if any notifications exist in DB for different recipients:');
+    const otherNotifs = await Notification.find({ recipient: { $ne: query.recipient } }).limit(3);
+    if (otherNotifs.length > 0) {
+      console.log('   Other notifications in DB:', otherNotifs.map(n => ({
+        recipient: n.recipient.toString(),
+        type: n.type
+      })));
+    }
+  }
+
   const total = await Notification.countDocuments(query);
   const unreadCount = await Notification.countDocuments({
     recipient: req.user.id,
     read: false
   });
+
+  console.log('📈 Counts:', {
+    matching_count: notifications.length,
+    total_count: total,
+    unread_count: unreadCount
+  });
+  console.log('=== END FETCH ===\n');
 
   res.status(200).json({
     success: true,
@@ -181,6 +249,14 @@ exports.sendBroadcast = asyncHandler(async (req, res, next) => {
     }).catch(err => {
       console.error(`Failed to send email to ${user.email}:`, err);
     });
+  }
+
+  // 📬 Emit real-time broadcast notification
+  try {
+    await notificationEmitter.notifyBroadcast(message, req.user, recipients);
+    console.log('✅ Real-time broadcast notification emitted');
+  } catch (notifError) {
+    console.error('❌ Real-time broadcast notification failed:', notifError);
   }
 
   // Emit real-time notifications

@@ -6,7 +6,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const { sendEmail } = require('../services/email.service');
 const { createNotification } = require('../services/notification.service');
-const { emitToSocket } = require('../services/socket.service');
+const { emitToRole, emitToUser, emitToAll } = require('../services/socket.service');
+const notificationEmitter = require('../services/notificationEmitter.service');
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -18,11 +19,16 @@ const razorpay = new Razorpay({
 // @route   POST /api/donations/create-order
 // @access  Private
 exports.createDonationOrder = asyncHandler(async (req, res, next) => {
-  const { amount, currency = 'INR', message } = req.body;
+  const { amount, currency = 'INR', message, name, email, anonymous = false, cause = 'general' } = req.body;
 
   // Validate amount
   if (amount < 10) {
     return next(new ErrorResponse('Minimum donation amount is ₹10', 400));
+  }
+
+  // Validate required fields
+  if (!name || !email) {
+    return next(new ErrorResponse('Name and email are required', 400));
   }
 
   const options = {
@@ -43,6 +49,10 @@ exports.createDonationOrder = asyncHandler(async (req, res, next) => {
     // Create donation record
     const donation = await Donation.create({
       user: req.user.id,
+      name: anonymous ? 'Anonymous' : name,
+      email,
+      anonymous,
+      cause,
       orderId: order.id,
       amount,
       currency,
@@ -63,101 +73,233 @@ exports.createDonationOrder = asyncHandler(async (req, res, next) => {
   }
 });
 
-// @desc    Verify donation payment
+// @desc    Verify donation payment (fetch from Razorpay API)
 // @route   POST /api/donations/verify
 // @access  Private
 exports.verifyDonation = asyncHandler(async (req, res, next) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, donationId } = req.body;
+  console.log('=== VERIFY DONATION REQUEST ===');
+  console.log('Raw req.body:', req.body);
+  
+  const { razorpay_payment_id, donationId } = req.body;
+
+  console.log('Extracted fields:', {
+    razorpay_payment_id,
+    donationId
+  });
 
   // Validate input
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !donationId) {
-    return next(new ErrorResponse('Missing required parameters', 400));
+  if (!razorpay_payment_id || !donationId) {
+    console.error('Missing required parameters');
+    return next(new ErrorResponse(`Missing required parameters: ${!razorpay_payment_id ? 'razorpay_payment_id ' : ''}${!donationId ? 'donationId' : ''}`, 400));
   }
 
-  // Verify signature
-  const body = razorpay_order_id + '|' + razorpay_payment_id;
-  const expectedSignature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-    .update(body.toString())
-    .digest('hex');
+  try {
+    // Fetch payment details from Razorpay API
+    console.log('Fetching payment details from Razorpay for payment:', razorpay_payment_id);
+    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    
+    console.log('Payment fetched from Razorpay:', {
+      id: payment.id,
+      status: payment.status,
+      amount: payment.amount,
+      currency: payment.currency
+    });
 
-  if (expectedSignature !== razorpay_signature) {
-    return next(new ErrorResponse('Payment verification failed', 400));
+    // Check if payment is successful
+    if (payment.status !== 'captured') {
+      console.error('Payment status is not captured:', payment.status);
+      return next(new ErrorResponse(`Payment status is ${payment.status}, expected captured`, 400));
+    }
+
+    // Find donation record
+    const donation = await Donation.findById(donationId);
+    if (!donation) {
+      console.error('Donation not found:', donationId);
+      return next(new ErrorResponse('Donation not found', 404));
+    }
+
+    // Update donation status
+    donation.paymentId = razorpay_payment_id;
+    donation.orderId = payment.order_id;
+    donation.status = 'completed';
+    donation.completedAt = new Date();
+    donation.razorpayOrder = payment;
+    await donation.save();
+
+    console.log('Donation updated successfully:', {
+      donationId: donation._id,
+      paymentId: donation.paymentId,
+      status: donation.status
+    });
+
+    // Update user stats
+    await User.findByIdAndUpdate(donation.user, {
+      $inc: {
+        'stats.donationsMade': 1,
+        'stats.totalDonated': donation.amount
+      }
+    });
+
+    // Create notification for ADMINS about new donation received
+    try {
+      await createNotification({
+        user: donation.user,
+        type: 'donation_received',
+        title: 'New Donation Received',
+        message: `${donation.anonymous ? 'Anonymous' : donation.name} donated ₹${donation.amount}`,
+        data: { donationId: donation._id, amount: donation.amount },
+        recipients: ['admin']  // Only admins get this notification
+      });
+    } catch (notificationError) {
+      console.error('❌ Admin notification creation failed:', notificationError.message);
+    }
+
+    // Create notification for CITIZEN/DONOR about successful donation
+    try {
+      await createNotification({
+        user: donation.user,
+        type: 'donation_successful',
+        title: 'Donation Successful',
+        message: `Thank you for your donation of ₹${donation.amount}!`,
+        data: { donationId: donation._id, amount: donation.amount },
+        recipients: [donation.user]  // Only the donor gets this notification
+      });
+    } catch (notificationError) {
+      console.error('❌ Donor notification creation failed:', notificationError.message);
+    }
+
+    // Send thank you email to donor
+    try {
+      await sendEmail({
+        to: req.user.email,
+        subject: 'Thank You for Your Donation!',
+        template: 'donation-thankyou',
+        context: {
+          name: req.user.name,
+          amount: donation.amount,
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          transactionId: razorpay_payment_id,
+          message: donation.message || 'Your contribution will help improve our roads',
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+          appName: 'Smart Road Feedback',
+          year: new Date().getFullYear()
+        }
+      });
+    } catch (emailError) {
+      console.error('❌ Email send failed:', emailError.message);
+    }
+
+    // Send notification to all admins
+    try {
+      const admins = await User.find({ role: 'admin' }).select('email name');
+      for (const admin of admins) {
+        await sendEmail({
+          to: admin.email,
+          subject: 'New Donation Received',
+          template: 'admin-donation-received',
+          context: {
+            adminName: admin.name,
+            donorName: req.user.name,
+            donorEmail: req.user.email,
+            amount: donation.amount,
+            date: new Date().toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }),
+            message: donation.message || 'No message provided',
+            totalDonated: req.user.stats.totalDonated + donation.amount,
+            appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+            appName: 'Smart Road Feedback',
+            year: new Date().getFullYear()
+          }
+        });
+      }
+    } catch (adminEmailError) {
+      console.error('❌ Admin donation notification failed:', adminEmailError);
+    }
+
+    // 📬 Emit real-time notification for donation received
+    try {
+      await notificationEmitter.notifyDonationReceived(donation, req.user);
+      console.log('✅ Real-time donation notification emitted to admins');
+    } catch (notifError) {
+      console.error('❌ Real-time donation notification failed:', notifError);
+    }
+
+    // Emit real-time update to admins with full donation data
+    try {
+      emitToRole('admin', 'donation_received', {
+        donationId: donation._id,
+        userId: donation.user,
+        name: donation.name,
+        email: donation.email,
+        amount: donation.amount,
+        cause: donation.cause,
+        anonymous: donation.anonymous,
+        message: donation.message,
+        timestamp: new Date()
+      });
+      console.log('✅ Socket emission to admins successful');
+    } catch (socketError) {
+      console.error('❌ Socket emission failed:', socketError.message);
+    }
+
+    // Emit real-time update to the user (donor) with success confirmation
+    try {
+      emitToUser(donation.user, 'donation_completed', {
+        donationId: donation._id,
+        amount: donation.amount,
+        status: 'completed',
+        timestamp: new Date()
+      });
+      console.log('✅ Donor confirmation emitted to user:', donation.user);
+    } catch (socketError) {
+      console.error('❌ Donor socket emission failed:', socketError.message);
+    }
+
+    // Emit real-time notification for citizen about successful donation
+    try {
+      emitToUser(donation.user, 'donation_notification', {
+        type: 'donation_successful',
+        title: 'Donation Successful',
+        message: `Thank you for your donation of ₹${donation.amount}!`,
+        donationId: donation._id,
+        amount: donation.amount,
+        timestamp: new Date()
+      });
+      console.log('✅ Citizen donation notification emitted to user:', donation.user);
+    } catch (socketError) {
+      console.error('❌ Citizen notification socket emission failed:', socketError.message);
+    }
+
+    // Emit broadcast update to all connected users (fallback)
+    try {
+      emitToRole('all_users', 'donation_update', {
+        donationId: donation._id,
+        userId: donation.user,
+        amount: donation.amount,
+        status: 'completed',
+        timestamp: new Date()
+      });
+      console.log('✅ Broadcast donation update emitted to all_users room');
+    } catch (socketError) {
+      console.error('❌ Broadcast emission failed:', socketError.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: donation,
+      message: 'Donation verified successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error verifying donation:', error);
+    return next(new ErrorResponse(error.message || 'Payment verification failed', 500));
   }
-
-  // Find donation record
-  const donation = await Donation.findById(donationId);
-  if (!donation) {
-    return next(new ErrorResponse('Donation not found', 404));
-  }
-
-  // Update donation status
-  donation.paymentId = razorpay_payment_id;
-  donation.status = 'completed';
-  donation.completedAt = new Date();
-  await donation.save();
-
-  // Update user stats
-  await User.findByIdAndUpdate(donation.user, {
-    $inc: {
-      'stats.donationsMade': 1,
-      'stats.totalDonated': donation.amount
-    }
-  });
-
-  // Create notification
-  await createNotification({
-    user: donation.user,
-    type: 'donation_received',
-    title: 'Donation Successful',
-    message: `Thank you for your donation of ₹${donation.amount}`,
-    data: { donationId: donation._id, amount: donation.amount },
-    recipients: ['admin', donation.user]
-  });
-
-  // Send thank you email
-  await sendEmail({
-    to: req.user.email,
-    subject: 'Thank You for Your Donation!',
-    template: 'donation-thankyou',
-    context: {
-      name: req.user.name,
-      amount: donation.amount,
-      date: new Date().toLocaleDateString(),
-      transactionId: razorpay_payment_id,
-      message: donation.message || 'Your contribution will help improve our roads',
-      year: new Date().getFullYear()
-    }
-  });
-
-  // Send notification to admin
-  await sendEmail({
-    to: 'admin@smartroad.com',
-    subject: 'New Donation Received',
-    template: 'admin-donation-received',
-    context: {
-      donorName: req.user.name,
-      donorEmail: req.user.email,
-      amount: donation.amount,
-      date: new Date().toLocaleDateString(),
-      message: donation.message || 'No message provided',
-      totalDonated: req.user.stats.totalDonated + donation.amount
-    }
-  });
-
-  // Emit real-time update
-  emitToSocket('donation_received', {
-    donationId: donation._id,
-    userId: donation.user,
-    amount: donation.amount,
-    timestamp: new Date()
-  });
-
-  res.status(200).json({
-    success: true,
-    data: donation,
-    message: 'Donation verified successfully'
-  });
 });
 
 // @desc    Get all donations
@@ -350,8 +492,14 @@ exports.updateDonationStatus = asyncHandler(async (req, res, next) => {
         name: donation.user.name,
         amount: donation.amount,
         transactionId: donation.paymentId,
-        refundDate: new Date().toLocaleDateString(),
+        refundDate: new Date().toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }),
         notes: notes || 'Refund processed as per request',
+        appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+        appName: 'Smart Road Feedback',
         year: new Date().getFullYear()
       }
     });
@@ -365,6 +513,15 @@ exports.updateDonationStatus = asyncHandler(async (req, res, next) => {
       data: { donationId: donation._id },
       recipients: [donation.user]
     });
+
+    // 📬 Emit real-time notification for refund
+    try {
+      const donor = await User.findById(donation.user);
+      await notificationEmitter.notifyDonationRefunded(donation, donor);
+      console.log('✅ Real-time refund notification emitted to donor');
+    } catch (notifError) {
+      console.error('❌ Real-time refund notification failed:', notifError);
+    }
   }
 
   res.status(200).json({

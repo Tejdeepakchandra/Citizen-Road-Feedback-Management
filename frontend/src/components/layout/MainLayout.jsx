@@ -48,20 +48,21 @@ const MainLayout = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStaffRoute = location.pathname.startsWith('/staff');
   
+  
   // Set appropriate background based on route
   const getBackground = () => {
     if (isAdminRoute) {
-      return darkMode 
-        ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-        : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
+      return theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+        : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)';
     } else if (isStaffRoute) {
-      return darkMode 
-        ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
-        : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)';
+      return theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)'
+        : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)';
     }
-    return darkMode 
-      ? 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)'
-      : 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)';
+    return theme.palette.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%)'
+      : 'linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%)';
   };
 
   return (
@@ -124,8 +125,8 @@ const MainLayout = () => {
           <Container
             maxWidth="xl"
             sx={{
-              py: 4,
-              px: { xs: 2, sm: 3, md: 4 },
+              py: isStaffRoute ? 0 : 4,
+              px: isStaffRoute ? 0 : { xs: 2, sm: 3, md: 4 },
               flex: 1,
               width: '100%',
               maxWidth: '100% !important',

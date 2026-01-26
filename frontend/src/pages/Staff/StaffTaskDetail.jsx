@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Grid, Card, CardContent, Typography, Box, Chip, LinearProgress, Button,
   Avatar, Divider, List, ListItem, ListItemText, ListItemAvatar, CircularProgress,
-  IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tabs, Tab
+  IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tabs, Tab, useTheme
 } from '@mui/material';
 import { ArrowBack, LocationOn, Schedule, PhotoCamera, Update, CheckCircle, 
   Assignment, Build, Lightbulb, Water, Delete, EditRoad, Share, Download } from '@mui/icons-material';
@@ -15,6 +15,7 @@ const StaffTaskDetail = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const theme = useTheme();
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);

@@ -55,13 +55,13 @@
         </div>
         <div class="content">
             <div class="message">
-                <p>${title || 'Notification'}</p>
-                <p>${message || 'Thank you for using Smart Road Management System.'}</p>
+                <p>{{#if title}}{{title}}{{else}}Notification{{/if}}</p>
+                <p>{{#if message}}{{message}}{{else}}Thank you for using Smart Road Management System.{{/if}}</p>
             </div>
         </div>
         <div class="footer">
-            <p>&copy; ${year} Smart Road Management System. All rights reserved.</p>
-            <p>Contact: ${supportEmail}</p>
+            <p>&copy; {{year}} Smart Road Management System. All rights reserved.</p>
+            <p>Contact: {{supportEmail}}</p>
         </div>
     </div>
 </body>

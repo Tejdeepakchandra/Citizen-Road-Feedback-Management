@@ -38,6 +38,7 @@ import {
   Fade,
   Chip,
   Badge,
+  useTheme as useMuiTheme,
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
@@ -152,10 +153,11 @@ const StaffSettingsPage = () => {
   const [isEditingAccount, setIsEditingAccount] = useState(false);
 
   // Theme state
+  const theme = useMuiTheme();
   const [themeSettings, setThemeSettings] = useState({
     mode: themeMode || 'system',
     fontSize: 'medium',
-    primaryColor: '#1976d2',
+    primaryColor: theme.palette.primary.main,
   });
 
   // Staff availability
@@ -1607,10 +1609,10 @@ const StaffSettingsPage = () => {
                                 onClick={() => handleThemeChange(theme.mode)}
                               >
                                 <CardContent sx={{ textAlign: 'center' }}>
-                                  {React.cloneElement(theme.icon, { 
+                                {React.cloneElement(theme.icon, { 
                                     sx: { fontSize: 48, mb: 2, 
-                                      color: theme.mode === 'light' ? '#ff9800' : 
-                                             theme.mode === 'dark' ? '#90caf9' : '#9e9e9e' 
+                                      color: theme.mode === 'light' ? theme.palette.warning.main : 
+                                             theme.mode === 'dark' ? theme.palette.secondary.light : theme.palette.grey[500] 
                                     } 
                                   })}
                                   <Typography variant="subtitle1" fontWeight={600}>

@@ -23,8 +23,8 @@ import {
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { feedbackAPI, reportAPI } from "../../services/api";
+import { useAuth } from "../../../hooks/useAuth";
+import { feedbackAPI, reportAPI } from "../../../services/api";
 import { toast } from "react-hot-toast";
 
 const GiveFeedback = () => {

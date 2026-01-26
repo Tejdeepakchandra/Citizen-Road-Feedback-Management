@@ -1,0 +1,1043 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Button,
+  TextField,
+  Divider,
+  Tab,
+  Tabs,
+  Paper,
+  IconButton,
+  InputAdornment,
+  Alert,
+  Snackbar,
+  CircularProgress,
+  Chip,
+  Rating,
+} from '@mui/material';
+import {
+  Person,
+  Email,
+  Phone,
+  LocationOn,
+  Edit,
+  Save,
+  History,
+  BugReport,
+  Paid,
+  RateReview,
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../services/api';
+import { reportAPI } from '../../../services/api';
+
+const ProfilePage = () => {
+  const { user, updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [reports, setReports] = useState([]);
+  const [donations, setDonations] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+  });
+
+  // FIX: Fetch fresh user profile from backend IMMEDIATELY on page load (independent of context)
+  const fetchUserProfile = async () => {
+    try {
+      setProfileLoading(true);
+      
+      // Get fresh user data from backend
+      const res = await api.get('/auth/me');
+      const freshUser = res.data?.data || res.data?.user || res.data;
+      
+      if (freshUser) {
+        // Update auth context with fresh data
+        updateUser(freshUser);
+        
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify(freshUser));
+        
+        // Update form data with complete profile
+        setFormData({
+          name: freshUser.name || '',
+          email: freshUser.email || '',
+          phone: freshUser.phone || '',
+          address: freshUser.address || '',
+          city: freshUser.city || '',
+          state: freshUser.state || '',
+          pincode: freshUser.pincode || '',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch user profile:', err);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  // Fetch user activity data (reports, donations, feedback)
+  const fetchUserData = async () => {
+    try {
+      setActivityLoading(true);
+      
+      // Fetch reports
+      try {
+        const reportsRes = await reportAPI.getMyReports();
+        const reportsData = reportsRes.data?.data || reportsRes.data || [];
+        setReports(Array.isArray(reportsData) ? reportsData : []);
+      } catch (error) {
+        console.error('Failed to fetch reports:', error.message);
+        setReports([]);
+      }
+      
+      // Fetch donations
+      try {
+        const donationsRes = await api.get('/donations/my');
+        const donationsData = donationsRes.data?.data || donationsRes.data || [];
+        setDonations(Array.isArray(donationsData) ? donationsData : []);
+      } catch (error) {
+        console.error('Failed to fetch donations:', error.message);
+        setDonations([]);
+      }
+      
+      // Fetch feedback
+      try {
+        const feedbackRes = await api.get('/feedback/my');
+        const feedbackData = feedbackRes.data?.data || feedbackRes.data || [];
+        setFeedbacks(Array.isArray(feedbackData) ? feedbackData : []);
+      } catch (error) {
+        console.error('Failed to fetch feedback:', error.message);
+        setFeedbacks([]);
+      }
+      
+    } catch (error) {
+      console.error('Error in fetchUserData:', error);
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  // FIX: Fetch fresh user profile IMMEDIATELY on component mount (no dependency on context)
+  useEffect(() => {
+    // Fetch user profile right away, regardless of context state
+    fetchUserProfile();
+    fetchUserData();
+
+  }, []);
+
+  // FIX: Fetch activity data when clicking tabs or when fresh user data arrives
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    
+    // Fetch activity data when switching to activity tabs
+    if ([1, 2, 3, 4].includes(newValue)) {
+      fetchUserData();
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!formData.name) return;
+    
+    try {
+      setLoading(true);
+      
+      // Create update data - only include fields that have changed
+      const updateData = {};
+      const allowedFields = ['name', 'phone', 'address', 'city', 'state', 'pincode'];
+      
+      allowedFields.forEach(field => {
+        if (formData[field] !== undefined && formData[field] !== user?.[field]) {
+          updateData[field] = formData[field];
+        }
+      });
+      
+      // If no fields changed, just exit
+      if (Object.keys(updateData).length === 0) {
+        showSnackbar('No changes to save', 'info');
+        setIsEditing(false);
+        return;
+      }
+      
+      // Update profile via API
+      const response = await api.put('/auth/updatedetails', updateData);
+      
+      // Handle response
+      let updatedUser;
+      if (response.data?.data) {
+        updatedUser = response.data.data;
+      } else if (response.data?.user) {
+        updatedUser = response.data.user;
+      } else {
+        updatedUser = response.data;
+      }
+      
+      // Merge with existing user
+      const mergedUser = { ...user, ...updatedUser };
+      
+      // Update auth context
+      updateUser(mergedUser);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(mergedUser));
+      
+      showSnackbar('Profile updated successfully!', 'success');
+      setIsEditing(false);
+      
+      // Refresh profile data
+      fetchUserProfile();
+      
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      showSnackbar(
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        'Failed to update profile', 
+        'error'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showSnackbar = (message, severity) => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const handleRefreshAll = async () => {
+    await fetchUserProfile();
+    await fetchUserData();
+  };
+
+  if (profileLoading) {
+    return (
+      <Container maxWidth="lg">
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh' 
+        }}>
+          <CircularProgress />
+          <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+            Loading your profile...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '';
+    }
+  };
+
+  // Create recent activity from fetched data
+  const recentActivity = [
+    ...reports.slice(0, 5).map(report => ({
+      id: report._id || `report-${Math.random()}`,
+      type: 'report',
+      action: `Reported: ${report.title || 'Untitled Report'}`,
+      status: report.status || 'pending',
+      date: report.createdAt || new Date().toISOString(),
+      item: report
+    })),
+    ...donations.slice(0, 5).map(donation => ({
+      id: donation._id || `donation-${Math.random()}`,
+      type: 'donation',
+      action: `Donated ₹${donation.amount || 0}`,
+      date: donation.createdAt || new Date().toISOString(),
+      item: donation
+    })),
+    ...feedbacks.slice(0, 5).map(feedback => ({
+      id: feedback._id || `feedback-${Math.random()}`,
+      type: 'feedback',
+      action: `Gave ${feedback.rating || 0} star feedback`,
+      date: feedback.createdAt || new Date().toISOString(),
+      item: feedback
+    }))
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 15);
+
+  // Calculate statistics
+  const totalDonations = donations.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const resolvedReports = reports.filter(r => 
+    r.status === 'completed' || 
+    r.status === 'resolved' || 
+    r.status === 'Resolved'
+  ).length;
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                My Profile
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Manage your personal information and activity
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              onClick={handleRefreshAll}
+              disabled={activityLoading || profileLoading}
+              startIcon={activityLoading || profileLoading ? <CircularProgress size={20} /> : null}
+            >
+              {activityLoading || profileLoading ? 'Refreshing...' : 'Refresh All'}
+            </Button>
+          </Box>
+        </Box>
+
+        <Grid container spacing={4}>
+          {/* Left Sidebar - Profile Info */}
+          <Grid item xs={12} md={4}>
+            <Card sx={{ position: 'sticky', top: 20 }}>
+              <CardContent sx={{ textAlign: 'center', p: 4 }}>
+                {/* Profile Picture */}
+                <Box sx={{ position: 'relative', display: 'inline-block', mb: 3 }}>
+                  <Avatar
+                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366F1&color=fff&size=120`}
+                    sx={{ 
+                      width: 120, 
+                      height: 120, 
+                      mx: 'auto', 
+                      mb: 2,
+                      fontSize: '3rem',
+                      bgcolor: '#6366F1'
+                    }}
+                  >
+                    {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </Avatar>
+                </Box>
+
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  {user.name || 'User'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {user.email || 'No email'}
+                </Typography>
+                
+                <Chip 
+                  label={user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'} 
+                  color={
+                    user.role === 'admin' ? 'error' : 
+                    user.role === 'staff' ? 'primary' : 'default'
+                  }
+                  size="small"
+                  sx={{ mb: 1 }}
+                />
+                
+                {user.staffCategory && (
+                  <Chip 
+                    label={user.staffCategory} 
+                    color="secondary"
+                    size="small"
+                    sx={{ ml: 1 }}
+                  />
+                )}
+
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Member since {formatDate(user.createdAt)}
+                </Typography>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Contact Info */}
+                <Box sx={{ textAlign: 'left', mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                    Contact Information
+                  </Typography>
+                  {user.phone && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Phone fontSize="small" color="action" />
+                      <Typography variant="body2">{user.phone}</Typography>
+                    </Box>
+                  )}
+                  {user.address && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <LocationOn fontSize="small" color="action" sx={{ mt: 0.5 }} />
+                      <Typography variant="body2">
+                        {user.address}
+                        {user.city && `, ${user.city}`}
+                        {user.state && `, ${user.state}`}
+                        {user.pincode && ` - ${user.pincode}`}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Quick Stats */}
+                <Box sx={{ textAlign: 'left' }}>
+                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                    Your Contributions
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Reports Submitted:</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {reports.length}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Reports Resolved:</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {resolvedReports}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2">Donations Made:</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {donations.length}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">Total Donated:</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      ₹{totalDonations.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Main Content */}
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ mb: 3 }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{ borderBottom: 1, borderColor: 'divider' }}
+              >
+                <Tab icon={<Person />} label="Personal Info" />
+                <Tab icon={<History />} label="Activity" />
+                <Tab icon={<BugReport />} label="Reports" />
+                <Tab icon={<Paid />} label="Donations" />
+                <Tab icon={<RateReview />} label="Feedback" />
+              </Tabs>
+
+              <Box sx={{ p: 3 }}>
+                {/* Personal Info Tab */}
+                {activeTab === 0 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Personal Information
+                      </Typography>
+                      <Button
+                        variant={isEditing ? "contained" : "outlined"}
+                        startIcon={isEditing ? <Save /> : <Edit />}
+                        onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+                        disabled={loading}
+                      >
+                        {isEditing ? (loading ? 'Saving...' : 'Save Changes') : 'Edit Profile'}
+                      </Button>
+                    </Box>
+
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Full Name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Person fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText="Your full name as it should appear"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          disabled={true}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Email fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText="Email cannot be changed"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Phone Number"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Phone fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText="Your contact number"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Address"
+                          name="address"
+                          value={formData.address}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <LocationOn fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText="Your street address"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="City"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          helperText="City name"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="State"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          helperText="State name"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="Pincode"
+                          name="pincode"
+                          value={formData.pincode}
+                          onChange={handleInputChange}
+                          disabled={!isEditing || loading}
+                          helperText="6-digit postal code"
+                        />
+                      </Grid>
+                    </Grid>
+
+                    {isEditing && (
+                      <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            setIsEditing(false);
+                            // Reset form data to original user data
+                            setFormData({
+                              name: user.name || '',
+                              email: user.email || '',
+                              phone: user.phone || '',
+                              address: user.address || '',
+                              city: user.city || '',
+                              state: user.state || '',
+                              pincode: user.pincode || '',
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="contained"
+                          onClick={handleSaveProfile}
+                          disabled={loading}
+                        >
+                          {loading ? <CircularProgress size={24} /> : 'Save Changes'}
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {/* Activity Tab */}
+                {activeTab === 1 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Recent Activity
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={fetchUserData}
+                        disabled={activityLoading}
+                        startIcon={activityLoading ? <CircularProgress size={16} /> : null}
+                      >
+                        Refresh
+                      </Button>
+                    </Box>
+                    
+                    {activityLoading && recentActivity.length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <CircularProgress />
+                        <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+                          Loading activity...
+                        </Typography>
+                      </Box>
+                    ) : recentActivity.length > 0 ? (
+                      <Box>
+                        {recentActivity.map((item) => (
+                          <Card 
+                            key={item.id} 
+                            sx={{ 
+                              mb: 2, 
+                              p: 2, 
+                              borderLeft: '4px solid', 
+                              borderColor: 
+                                item.type === 'report' ? '#4CAF50' : 
+                                item.type === 'donation' ? '#2196F3' : '#FF9800'
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Avatar sx={{ 
+                                bgcolor: 
+                                  item.type === 'report' ? '#4CAF50' : 
+                                  item.type === 'donation' ? '#2196F3' : '#FF9800',
+                                width: 40, 
+                                height: 40 
+                              }}>
+                                {item.type === 'report' ? <BugReport /> : 
+                                 item.type === 'donation' ? <Paid /> : <RateReview />}
+                              </Avatar>
+                              <Box sx={{ flex: 1 }}>
+                                <Typography variant="body1">
+                                  {item.action}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatDate(item.date)} at {formatTime(item.date)}
+                                </Typography>
+                              </Box>
+                              {item.status && (
+                                <Chip 
+                                  label={item.status} 
+                                  size="small"
+                                  color={
+                                    item.status === 'completed' || item.status === 'resolved' ? 'success' :
+                                    item.status === 'in-progress' || item.status === 'processing' ? 'info' :
+                                    item.status === 'pending' ? 'warning' : 'default'
+                                  }
+                                />
+                              )}
+                            </Box>
+                          </Card>
+                        ))}
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Avatar sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          mx: 'auto', 
+                          mb: 2,
+                          bgcolor: 'action.disabledBackground'
+                        }}>
+                          <History />
+                        </Avatar>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No Activity Yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                          Start contributing to the community to see your activity here
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <Button 
+                            variant="contained" 
+                            href="/reports/new"
+                            startIcon={<BugReport />}
+                          >
+                            Submit Report
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            href="/donate"
+                            startIcon={<Paid />}
+                          >
+                            Make Donation
+                          </Button>
+                        </Box>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {/* Reports Tab */}
+                {activeTab === 2 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Your Reports ({reports.length})
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => fetchUserData()}
+                        disabled={activityLoading}
+                      >
+                        Refresh
+                      </Button>
+                    </Box>
+                    
+                    {activityLoading && reports.length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <CircularProgress />
+                        <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+                          Loading reports...
+                        </Typography>
+                      </Box>
+                    ) : reports.length > 0 ? (
+                      <Box>
+                        {reports.slice(0, 5).map((report, index) => (
+                          <Card key={report._id || index} sx={{ mb: 2, p: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                  {report.title || 'Untitled Report'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {report.category || 'No category'} • {report.status || 'Unknown status'}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatDate(report.createdAt)} • {formatTime(report.createdAt)}
+                                </Typography>
+                              </Box>
+                              <Chip 
+                                label={report.status || 'Unknown'} 
+                                size="small"
+                                color={
+                                  report.status === 'completed' || report.status === 'resolved' ? 'success' :
+                                  report.status === 'in-progress' ? 'info' :
+                                  report.status === 'pending' ? 'warning' : 'default'
+                                }
+                              />
+                            </Box>
+                          </Card>
+                        ))}
+                        {reports.length > 5 && (
+                          <Button 
+                            fullWidth 
+                            variant="outlined" 
+                            href="/reports/my-reports"
+                            sx={{ mt: 2 }}
+                          >
+                            View All Reports ({reports.length})
+                          </Button>
+                        )}
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Avatar sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          mx: 'auto', 
+                          mb: 2,
+                          bgcolor: 'action.disabledBackground'
+                        }}>
+                          <BugReport />
+                        </Avatar>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No Reports Yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                          You haven't submitted any reports yet. Report issues in your area to help improve your community.
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          href="/reports/new"
+                          startIcon={<BugReport />}
+                        >
+                          Submit Your First Report
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {/* Donations Tab */}
+                {activeTab === 3 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Your Donations ({donations.length})
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => fetchUserData()}
+                        disabled={activityLoading}
+                      >
+                        Refresh
+                      </Button>
+                    </Box>
+                    
+                    {activityLoading && donations.length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <CircularProgress />
+                        <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+                          Loading donations...
+                        </Typography>
+                      </Box>
+                    ) : donations.length > 0 ? (
+                      <Box>
+                        {donations.slice(0, 5).map((donation, index) => (
+                          <Card key={donation._id || index} sx={{ mb: 2, p: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="h6" color="primary">
+                                  ₹{donation.amount?.toLocaleString() || '0'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {donation.cause || 'General Fund'} • {formatDate(donation.createdAt)}
+                                </Typography>
+                                {donation.message && (
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                    "{donation.message}"
+                                  </Typography>
+                                )}
+                              </Box>
+                              <Chip 
+                                label={donation.status || 'Completed'} 
+                                color="success"
+                                size="small"
+                              />
+                            </Box>
+                          </Card>
+                        ))}
+                        {donations.length > 5 && (
+                          <Button 
+                            fullWidth 
+                            variant="outlined" 
+                            href="/donate"
+                            sx={{ mt: 2 }}
+                          >
+                            View Donation History ({donations.length})
+                          </Button>
+                        )}
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Avatar sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          mx: 'auto', 
+                          mb: 2,
+                          bgcolor: 'action.disabledBackground'
+                        }}>
+                          <Paid />
+                        </Avatar>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No Donations Yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                          You haven't made any donations yet. Support road safety initiatives in your community.
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          href="/donate"
+                          startIcon={<Paid />}
+                        >
+                          Make Your First Donation
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                {/* Feedback Tab */}
+                {activeTab === 4 && (
+                  <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" fontWeight={600}>
+                        Your Feedback ({feedbacks.length})
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => fetchUserData()}
+                        disabled={activityLoading}
+                      >
+                        Refresh
+                      </Button>
+                    </Box>
+                    
+                    {activityLoading && feedbacks.length === 0 ? (
+                      <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <CircularProgress />
+                        <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+                          Loading feedback...
+                        </Typography>
+                      </Box>
+                    ) : feedbacks.length > 0 ? (
+                      <Box>
+                        {feedbacks.slice(0, 5).map((feedback, index) => (
+                          <Card key={feedback._id || index} sx={{ mb: 2, p: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                              <Box>
+                                <Rating value={feedback.rating || 0} readOnly size="small" />
+                                {feedback.comment && (
+                                  <Typography variant="body2" sx={{ mt: 1 }}>
+                                    "{feedback.comment}"
+                                  </Typography>
+                                )}
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                  {formatDate(feedback.createdAt)} • {formatTime(feedback.createdAt)}
+                                </Typography>
+                              </Box>
+                              {feedback.report && (
+                                <Typography variant="caption" color="text.secondary">
+                                  For: {feedback.report.title}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Card>
+                        ))}
+                        {feedbacks.length > 5 && (
+                          <Button 
+                            fullWidth 
+                            variant="outlined" 
+                            href="/feedback"
+                            sx={{ mt: 2 }}
+                          >
+                            View All Feedback ({feedbacks.length})
+                          </Button>
+                        )}
+                      </Box>
+                    ) : (
+                      <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Avatar sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          mx: 'auto', 
+                          mb: 2,
+                          bgcolor: 'action.disabledBackground'
+                        }}>
+                          <RateReview />
+                        </Avatar>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No Feedback Given Yet
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                          You haven't given any feedback yet. Rate completed reports to help improve services.
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          href="/reports/my-reports"
+                          startIcon={<RateReview />}
+                        >
+                          View Completed Reports
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </motion.div>
+    </Container>
+  );
+};
+
+export default ProfilePage;

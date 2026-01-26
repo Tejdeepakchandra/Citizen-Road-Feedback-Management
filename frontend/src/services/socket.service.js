@@ -50,7 +50,16 @@ class SocketService {
   // Initialize socket connection
   initialize(token = null) {
     if (this.socket && this.isConnected) {
-      console.log('Socket already connected');
+      console.log('✅ Socket already connected, returning existing instance');
+      return this.socket;
+    }
+
+    if (this.socket && !this.isConnected) {
+      console.log('🔄 Socket exists but disconnected, reconnecting...');
+      if (token) {
+        this.socket.auth = { token };
+      }
+      this.socket.connect();
       return this.socket;
     }
 
@@ -62,7 +71,7 @@ class SocketService {
       timeout: this.connectionTimeout,
       transports: ['websocket', 'polling'],
       autoConnect: true,
-      forceNew: true,
+      forceNew: false,  // Changed from true to prevent creating duplicate connections
     };
 
     // Add authentication if token is provided
@@ -71,10 +80,17 @@ class SocketService {
     }
 
     // Get server URL from environment or use default
-    const serverUrl = process.env.REACT_APP_WS_URL || 
-                     process.env.REACT_APP_API_URL?.replace('http', 'ws') || 
-                     'ws://localhost:3001';
+    // Support both Vite and React env variables
+    const apiUrl = import.meta.env.VITE_API_URL || 
+                   process.env.REACT_APP_API_URL || 
+                   'http://localhost:5000';
+    
+    // Convert http/https to ws/wss
+    const serverUrl = apiUrl.replace(/^https?:\/\//, (match) => {
+      return match === 'https://' ? 'wss://' : 'ws://';
+    });
 
+    console.log('🔌 Socket connecting to:', serverUrl);
     this.socket = io(serverUrl, options);
 
     this.setupEventListeners();

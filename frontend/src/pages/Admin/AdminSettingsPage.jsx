@@ -51,6 +51,7 @@ import {
   Badge,
   LinearProgress,
   AlertTitle,
+  useTheme,
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
@@ -104,11 +105,12 @@ import {
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { adminAPI, authAPI } from '../../services/api';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme as useCustomTheme } from '../../context/ThemeContext';
 
 const AdminSettingsPage = () => {
   const { user, updateUser, logout } = useAuth();
-  const { themeMode, changeTheme } = useTheme();
+  const { themeMode, changeTheme } = useCustomTheme();
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -179,9 +181,8 @@ const AdminSettingsPage = () => {
   });
   const [isEditingAccount, setIsEditingAccount] = useState(false);
 
-  // Theme
   const [themeSettings, setThemeSettings] = useState({
-    mode: themeMode || 'system',
+    mode: 'system',
     fontSize: 'medium',
     primaryColor: '#1976d2',
   });
@@ -226,9 +227,10 @@ const AdminSettingsPage = () => {
   useEffect(() => {
     setThemeSettings(prev => ({
       ...prev,
-      mode: themeMode || 'system'
+      mode: themeMode || 'system',
+      primaryColor: theme.palette.primary.main,
     }));
-  }, [themeMode]);
+  }, [themeMode, theme]);
 
   // Load admin data on mount
   useEffect(() => {
@@ -1493,8 +1495,8 @@ const AdminSettingsPage = () => {
                                 <CardContent sx={{ textAlign: 'center' }}>
                                   {React.cloneElement(theme.icon, { 
                                     sx: { fontSize: 48, mb: 2, 
-                                      color: theme.mode === 'light' ? '#ff9800' : 
-                                             theme.mode === 'dark' ? '#90caf9' : '#9e9e9e' 
+                                      color: theme.mode === 'light' ? theme.palette.warning.main : 
+                                             theme.mode === 'dark' ? theme.palette.secondary.light : theme.palette.grey[500] 
                                     } 
                                   })}
                                   <Typography variant="subtitle1" fontWeight={600}>

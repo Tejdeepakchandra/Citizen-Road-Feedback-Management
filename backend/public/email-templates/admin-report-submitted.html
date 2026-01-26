@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Report Submitted - Admin Notification</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #D32F2F 0%, #C62828 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { padding: 30px; background: #f9f9f9; border-radius: 0 0 10px 10px; }
+        .report-details { background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #D32F2F; margin: 20px 0; }
+        .detail-row { display: flex; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .detail-label { font-weight: 600; color: #555; width: 150px; flex-shrink: 0; }
+        .detail-value { color: #222; flex: 1; }
+        .severity-high { background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .severity-medium { background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .severity-low { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .action-buttons { text-align: center; margin: 20px 0; }
+        .button { display: inline-block; background: #D32F2F; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: 600; margin: 0 5px; }
+        .button.secondary { background: #1976D2; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 New Report Submitted</h1>
+    </div>
+    <div class="content">
+        <p>Hello {{adminName}},</p>
+        <p>A new road issue report has been submitted and requires your attention.</p>
+        
+        <div class="report-details">
+            <h3>Report Information:</h3>
+            <div class="detail-row">
+                <span class="detail-label">Report ID:</span>
+                <span class="detail-value">#{{reportId}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Title:</span>
+                <span class="detail-value">{{title}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Category:</span>
+                <span class="detail-value">{{category}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Severity:</span>
+                <span class="detail-value"><span class="severity-{{severity}}">{{severity}}</span></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Location:</span>
+                <span class="detail-value">{{address}}</span>
+            </div>
+            {{#if landmark}}
+            <div class="detail-row">
+                <span class="detail-label">Landmark:</span>
+                <span class="detail-value">{{landmark}}</span>
+            </div>
+            {{/if}}
+            {{#if zone}}
+            <div class="detail-row">
+                <span class="detail-label">Zone:</span>
+                <span class="detail-value">{{zone}}</span>
+            </div>
+            {{/if}}
+            {{#if ward}}
+            <div class="detail-row">
+                <span class="detail-label">Ward:</span>
+                <span class="detail-value">{{ward}}</span>
+            </div>
+            {{/if}}
+            <div class="detail-row">
+                <span class="detail-label">Reported by:</span>
+                <span class="detail-value">{{reportedBy}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Submitted:</span>
+                <span class="detail-value">{{date}}</span>
+            </div>
+        </div>
+
+        {{#if description}}
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+            <h4>Description:</h4>
+            <p>{{description}}</p>
+        </div>
+        {{/if}}
+        
+        <p>Please review the report and assign it to the appropriate staff member for action.</p>
+        
+        <div class="action-buttons">
+            <a href="{{appUrl}}/admin/reports/{{reportId}}" class="button">Review Report</a>
+            <a href="{{appUrl}}/admin/reports" class="button secondary">View All Reports</a>
+        </div>
+        
+        <p>Best regards,<br>The {{appName}} Team</p>
+    </div>
+    <div class="footer">
+        <p>© {{year}} {{appName}}. All rights reserved.</p>
+    </div>
+</body>
+</html>

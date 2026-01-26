@@ -23,12 +23,12 @@ import CitizenDashboard from "./pages/Dashboard/CitizenDashboard";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import StaffDashboard from "./pages/Dashboard/StaffDashboard";
 //user
-import NewReport from "./pages/Reports/NewReport";
-import MyReports from "./pages/Reports/MyReports";
-import ReportDetail from "./pages/Reports/ReportDetail";
-import GiveFeedback from "./pages/Feedback/GiveFeedback";
-import FeedbackList from "./pages/Feedback/FeedbackList";
-import DonatePage from "./pages/Donations/DonatePage";
+import NewReport from "./pages/User/Reports/NewReport";
+import MyReports from "./pages/User/Reports/MyReports";
+import ReportDetail from "./pages/User/Reports/ReportDetail";
+import GiveFeedback from "./pages/User/Feedback/GiveFeedback";
+import FeedbackList from "./pages/User/Feedback/FeedbackList";
+import DonatePage from "./pages/User/Donations/DonatePage";
 
 
 import ManageStaff from "./pages/Admin/ManageStaff";
@@ -37,9 +37,12 @@ import SystemAnalytics from "./pages/Admin/SystemAnalytics";
 import ContentManager from "./pages/Admin/ContentManager";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
-import UserSettingsPage from "./pages/Settings/UserSettingsPage";
-import ProfilePage from "./pages/Profile/ProfilePage";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import UserSettingsPage from "./pages/User/Settings/UserSettingsPage";
+import ProfilePage from "./pages/User/Profile/ProfilePage";
 import UserGallery from './pages/User/UserGallery';
+import NotificationsPage from './pages/NotificationsPage';
 
 
 // Admin Pages
@@ -166,6 +169,22 @@ const AppContent = () => {
               </PublicRoute>
             }
           />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password/:token"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
 
           {/* Protected routes (require authentication) */}
           <Route
@@ -241,6 +260,22 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <UserSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["citizen", "user"]}>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />
@@ -359,7 +394,14 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-        
+          <Route
+            path="/admin/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Staff routes - ALL INSIDE MainLayout */}
           <Route
@@ -464,6 +506,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute allowedRoles={["staff"]}>
                 <StaffSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["staff"]}>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />

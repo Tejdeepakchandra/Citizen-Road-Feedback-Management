@@ -29,3 +29,13 @@ exports.emitToAll = (event, data) => {
     console.error("emitToAll error:", err.message);
   }
 };
+
+// Emit event to a specific socket room (for notifications and generic broadcasts)
+exports.emitToSocket = (room, event, data) => {
+  try {
+    const io = getIO();
+    io.to(room).emit(event, data);
+  } catch (err) {
+    console.error("emitToSocket error:", err.message);
+  }
+};

@@ -107,7 +107,10 @@ const AdminDashboard = () => {
             height: '100%',
             borderRadius: 3,
             backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2)`,
             position: 'relative',
@@ -281,7 +284,7 @@ const AdminDashboard = () => {
                   fontWeight: 400,
                   opacity: 0.8,
                   maxWidth: '600px',
-                  color: alpha(theme.palette.common.white, 0.7),
+                  color: theme.palette.text.secondary ,
                 }}
               >
                 Welcome back, {user?.name || 'Administrator'}. Here's your system overview.
@@ -417,7 +420,10 @@ const AdminDashboard = () => {
                 height: '100%',
                 borderRadius: 3,
                 backdropFilter: 'blur(20px)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
               }}
@@ -443,10 +449,10 @@ const AdminDashboard = () => {
                   {dashboardData?.analytics?.usersByRole && Object.entries(dashboardData.analytics.usersByRole).map(([role, count]) => (
                     <Box key={role} sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2" sx={{ color: alpha('#fff', 0.8) }}>
+                        <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                           {role.charAt(0).toUpperCase() + role.slice(1)}
                         </Typography>
-                        <Typography variant="body2" fontWeight={600} sx={{ color: '#fff' }}>
+                        <Typography variant="body2" fontWeight={600} sx={{ color: theme.palette.text.primary }}>
                           {count}
                         </Typography>
                       </Box>
@@ -456,7 +462,7 @@ const AdminDashboard = () => {
                         sx={{
                           height: 8,
                           borderRadius: 4,
-                          bgcolor: alpha('#fff', 0.1),
+                          bgcolor: theme.palette.background.paper,
                           '& .MuiLinearProgress-bar': {
                             borderRadius: 4,
                             bgcolor: role === 'citizen' ? '#2196f3' :
@@ -478,7 +484,10 @@ const AdminDashboard = () => {
                 height: '100%',
                 borderRadius: 3,
                 backdropFilter: 'blur(20px)',
-                background: 'rgba(255, 255, 255, 0.05)',
+               background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
               }}
@@ -508,12 +517,15 @@ const AdminDashboard = () => {
                           p: 2,
                           textAlign: 'center',
                           backdropFilter: 'blur(10px)',
-                          background: 'rgba(255, 255, 255, 0.05)',
+                          background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                           border: '1px solid rgba(255, 255, 255, 0.1)',
                           borderRadius: 2,
                         }}
                       >
-                        <Typography variant="h5" fontWeight={700} sx={{ color: '#fff', mb: 0.5 }}>
+                        <Typography variant="h5" fontWeight={700} sx={{ color: theme.palette.text.primary, mb: 0.5 }}>
                           {count}
                         </Typography>
                         <Chip
@@ -545,7 +557,10 @@ const AdminDashboard = () => {
                 height: '100%',
                 borderRadius: 3,
                 backdropFilter: 'blur(20px)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
               }}
@@ -578,7 +593,10 @@ const AdminDashboard = () => {
                           alignItems: 'center',
                           gap: 2,
                           backdropFilter: 'blur(10px)',
-                          background: 'rgba(255, 255, 255, 0.05)',
+                          background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                           border: '1px solid rgba(255, 255, 255, 0.1)',
                           borderRadius: 2,
                         }}
@@ -590,10 +608,10 @@ const AdminDashboard = () => {
                           {activity.user?.name?.charAt(0)}
                         </Avatar>
                         <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" fontWeight={500} sx={{ color: '#fff' }}>
+                          <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
                             {activity.title}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: alpha('#fff', 0.6) }}>
+                          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                             {activity.type} • {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
                           </Typography>
                         </Box>
@@ -605,7 +623,7 @@ const AdminDashboard = () => {
                       </Paper>
                     ))
                   ) : (
-                    <Typography variant="body2" sx={{ color: alpha('#fff', 0.6), textAlign: 'center', py: 4 }}>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary, textAlign: 'center', py: 4 }}>
                       No recent activity
                     </Typography>
                   )}
@@ -621,7 +639,10 @@ const AdminDashboard = () => {
                 height: '100%',
                 borderRadius: 3,
                 backdropFilter: 'blur(20px)',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
               }}
@@ -647,31 +668,31 @@ const AdminDashboard = () => {
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ color: alpha('#fff', 0.7) }}>Donor</TableCell>
-                        <TableCell align="right" sx={{ color: alpha('#fff', 0.7) }}>Amount</TableCell>
-                        <TableCell align="right" sx={{ color: alpha('#fff', 0.7) }}>Donations</TableCell>
+                        <TableCell sx={{ color: theme.palette.text.secondary }}>Donor</TableCell>
+                        <TableCell align="right" sx={{ color: theme.palette.text.secondary }}>Amount</TableCell>
+                        <TableCell align="right" sx={{ color: theme.palette.text.secondary }}>Donations</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {dashboardData?.financial?.topDonors?.map((donor) => (
-                        <TableRow key={donor.userId} hover sx={{ '&:hover': { backgroundColor: alpha('#fff', 0.05) } }}>
+                        <TableRow key={donor.userId} hover sx={{ '&:hover': { backgroundColor: theme.palette.text.secondary } }}>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Avatar src={donor.avatar} sx={{ width: 32, height: 32 }}>
                                 {donor.name?.charAt(0)}
                               </Avatar>
                               <Box>
-                                <Typography variant="body2" fontWeight={500} sx={{ color: '#fff' }}>
+                                <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
                                   {donor.name}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: alpha('#fff', 0.6) }}>
+                                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                                   {donor.email}
                                 </Typography>
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell align="right">
-                            <Typography variant="body2" fontWeight={600} sx={{ color: '#fff' }}>
+                            <Typography variant="body2" fontWeight={600} sx={{ color: theme.palette.text.primary }}>
                               ₹{donor.totalAmount?.toLocaleString()}
                             </Typography>
                           </TableCell>
@@ -680,7 +701,7 @@ const AdminDashboard = () => {
                               label={donor.donationCount}
                               size="small"
                               variant="outlined"
-                              sx={{ color: '#fff', borderColor: alpha('#fff', 0.3) }}
+                              sx={{ color: theme.palette.text.primary, borderColor: theme.palette.text.secondary }}
                             />
                           </TableCell>
                         </TableRow>
@@ -698,7 +719,10 @@ const AdminDashboard = () => {
           sx={{
             borderRadius: 3,
             backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.05)',
+           background: theme.palette.mode === 'dark'
+  ? 'rgba(255, 255, 255, 0.05)'
+  : 'rgba(16, 185, 129, 0.22)',
+
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
           }}
@@ -720,27 +744,27 @@ const AdminDashboard = () => {
             <Grid container spacing={2}>
               <Grid item xs={6} md={3}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     Last Updated
                   </Typography>
-                  <Typography variant="body2" fontWeight={500} sx={{ color: '#fff' }}>
+                  <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
                     {dashboardData?.timestamp ? format(new Date(dashboardData.timestamp), 'PPpp') : 'N/A'}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={6} md={3}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     Active Users (7 days)
                   </Typography>
-                  <Typography variant="body2" fontWeight={500} sx={{ color: '#fff' }}>
+                  <Typography variant="body2" fontWeight={500} sx={{ color: theme.palette.text.primary }}>
                     {dashboardData?.summary?.activeUsers || 0}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={6} md={3}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     Platform Status
                   </Typography>
                   <Chip
@@ -754,7 +778,7 @@ const AdminDashboard = () => {
               </Grid>
               <Grid item xs={6} md={3}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     Pending Tasks
                   </Typography>
                   <Typography variant="body2" fontWeight={500} sx={{ color: 'warning.main' }}>

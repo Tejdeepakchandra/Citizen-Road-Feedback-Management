@@ -38,32 +38,51 @@ exports.init = (server) => {
       const userId = socket.user._id.toString();
       const role = socket.user.role;
 
-      // Private room
+      // Store user info in socket
+      socket.userId = userId;
+      socket.role = role;
+
+      // Join private room (user-specific)
       socket.join(`user_${userId}`);
+      console.log(`✅ Joined room: user_${userId}`);
 
-      // Role rooms
+      // Join role-based rooms
       socket.join(`${role}_room`);
+      console.log(`✅ Joined room: ${role}_room`);
 
-      console.log(`Joined rooms: user_${userId}, ${role}_room`);
+      // Join combined room for easier broad notifications
+      socket.join(`all_users`);
+      console.log(`✅ Joined room: all_users`);
+
+      // Emit connection confirmation to user
+      socket.emit('connection:confirmed', {
+        userId: userId,
+        role: role,
+        rooms: [`user_${userId}`, `${role}_room`, `all_users`]
+      });
     }
 
-    // 🔵 Report updates
+    // 🔵 Report updates (emit from frontend when report updated)
     socket.on("report:update", (data) => {
       io.to(`user_${data.userId}`).emit("report:updated", data);
     });
 
-    // 🔵 Progress updates
+    // 🔵 Progress updates (emit from frontend)
     socket.on("report:progress", (data) => {
       io.to(`user_${data.userId}`).emit("report:progress", data);
     });
 
-    // 🔔 Notification (generic)
+    // 🔔 Generic notification (emit from frontend)
     socket.on("notify", (data) => {
       io.to(`user_${data.userId}`).emit("notification:new", data);
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ Disconnected:", socket.id);
+      if (socket.user) {
+        console.log(`❌ Disconnected: ${socket.id} (${socket.role}: ${socket.userId})`);
+      } else {
+        console.log(`❌ Disconnected: ${socket.id}`);
+      }
     });
   });
 

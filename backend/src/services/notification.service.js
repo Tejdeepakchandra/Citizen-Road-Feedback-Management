@@ -11,25 +11,58 @@ exports.createNotification = async (data) => {
   try {
     let recipientIds = [];
 
+    console.log('📬 createNotification called:', {
+      type,
+      title,
+      recipients: recipients.map(r => typeof r === 'string' ? r : r.toString()),
+      recipientCount: recipients.length
+    });
+
     // Determine recipients
     if (recipients.includes('admin')) {
       const admins = await User.find({ role: 'admin', isActive: true }).select('_id');
       recipientIds.push(...admins.map(admin => admin._id));
+      console.log(`  ✓ Added ${admins.length} admins`);
     }
 
     if (recipients.includes('all')) {
       const allUsers = await User.find({ isActive: true }).select('_id');
       recipientIds.push(...allUsers.map(user => user._id));
+      console.log(`  ✓ Added ${allUsers.length} all users`);
     }
 
-    // Add specific user IDs
-    const specificUsers = recipients.filter(recipient => 
-      typeof recipient === 'string' && recipient.length === 24
-    );
-    recipientIds.push(...specificUsers);
+    // Add specific user IDs (handle both strings and ObjectIds)
+    const mongoose = require('mongoose');
+    const specificUsers = recipients.filter(recipient => {
+      // Skip role strings
+      if (typeof recipient === 'string' && ['admin', 'staff', 'user', 'citizen', 'all'].includes(recipient)) {
+        return false;
+      }
+      // Include valid ObjectIds (both string format and ObjectId objects)
+      if (mongoose.Types.ObjectId.isValid(recipient)) {
+        return true;
+      }
+      return false;
+    });
+    
+    console.log(`  ✓ Found ${specificUsers.length} specific user recipients`);
+    
+    // Convert string IDs to ObjectIds
+    specificUsers.forEach(userId => {
+      if (typeof userId === 'string') {
+        recipientIds.push(new mongoose.Types.ObjectId(userId));
+      } else {
+        recipientIds.push(userId);
+      }
+    });
 
     // Remove duplicates
-    recipientIds = [...new Set(recipientIds)];
+    recipientIds = [...new Set(recipientIds.map(id => id.toString()))].map(id => new mongoose.Types.ObjectId(id));
+    
+    console.log('📊 Final recipient IDs:', {
+      count: recipientIds.length,
+      ids: recipientIds.slice(0, 3).map(id => id.toString())
+    });
 
     // Create notifications
     const notifications = recipientIds.map(recipientId => ({
@@ -44,16 +77,24 @@ exports.createNotification = async (data) => {
 
     const savedNotifications = await Notification.insertMany(notifications);
 
-    // 🔧 FIXED: Use emitToSocket instead of emitToUser
-    savedNotifications.forEach(notification => {
-      emitToSocket(`notification:${notification.recipient}`, {
-        id: notification._id,
-        title: notification.title,
-        message: notification.message,
-        type: notification.type,
-        timestamp: new Date(),
-      });
-    });
+    // 🔧 Emit real-time notification to each recipient via socket
+    for (const notification of savedNotifications) {
+      try {
+        const userId = notification.recipient.toString();
+        emitToSocket(`user_${userId}`, 'notification:new', {
+          _id: notification._id,
+          id: notification._id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          priority: notification.priority,
+          timestamp: new Date(),
+        });
+        console.log(`✅ Socket notification emitted to user room: user_${userId}`);
+      } catch (err) {
+        console.error(`❌ Socket emit error for ${notification.recipient}:`, err.message);
+      }
+    }
 
     // Send email notifications to users who have it enabled
     const usersWithEmail = await User.find({

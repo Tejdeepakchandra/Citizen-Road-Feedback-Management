@@ -198,7 +198,7 @@ const MapPicker = ({ onLocationSelect, initialLocation = null }) => {
           left: 10,
           right: 10,
           zIndex: 1000,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: theme.palette.background.paper,
           p: 1.5,
           borderRadius: 2,
           textAlign: 'center',
@@ -217,7 +217,7 @@ const MapPicker = ({ onLocationSelect, initialLocation = null }) => {
             top: 60,
             right: 10,
             zIndex: 1000,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: theme.palette.background.paper,
             p: 1.5,
             borderRadius: 2,
           }}

@@ -236,259 +236,267 @@ useEffect(() => {
 
 
   // StatCard component
-  const StatCard = ({ title, value, icon, gradient, trend, trendValue, subtitle }) => {
-    const getColorFromGradient = () => {
-      if (!gradient) return '#8B5CF6';
-      const colors = gradient.match(/#[0-9A-F]{6}/gi);
-      return colors ? colors[0] : '#8B5CF6';
-    };
-
-    const cardColor = getColorFromGradient();
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+  // In your StatCard component, replace hardcoded colors:
+const StatCard = ({ title, value, icon, gradient, trend, trendValue, subtitle }) => {
+  // Use theme colors instead of hardcoded values
+   const getColorFromGradient = () => {
+    if (!gradient) return '#8B5CF6';
+    const colors = gradient.match(/#[0-9A-Fa-f]{6}/g);
+    return colors?.[0] || '#8B5CF6';
+  };
+  const cardColor = getColorFromGradient();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card
+        sx={{
+          height: '100%',
+          backdropFilter: 'blur(20px)',
+          background: theme.palette.mode === 'dark' 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : 'rgba(0, 0, 0, 0.02)',
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(255, 255, 255, 0.1)'
+            : '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[2],
+          borderRadius: 4,
+          overflow: 'visible',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: gradient || 'linear-gradient(135deg, #8B5CF6 0%, #0EA5E9 100%)',
+            borderTopLeftRadius: '16px',
+            borderTopRightRadius: '16px',
+          },
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: theme.shadows[8],
+          },
+          transition: 'all 0.3s ease',
+        }}
       >
-        <Card
-          sx={{
-            height: '100%',
-            backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: `
-              0 8px 32px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1)
-            `,
-            borderRadius: 4,
-            overflow: 'visible',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: gradient || 'linear-gradient(135deg, #8B5CF6 0%, #0EA5E9 100%)',
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px',
-            },
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: `
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                0 0 30px ${cardColor}33
-              `,
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box
+              sx={{
+                width: 50,
+                height: 50,
+                borderRadius: 3,
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.1)' 
+                  : 'rgba(0, 0, 0, 0.04)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.2)'
+                  : '1px solid rgba(0, 0, 0, 0.1)',
+                boxShadow: `0 0 20px ${alpha(cardColor, 0.1)}`,
+              }}
+            >
+              {React.cloneElement(icon, { 
+                sx: { 
+                  fontSize: 28,
+                  color: cardColor,
+                }
+              })}
+            </Box>
+            {trend && (
               <Box
                 sx={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 3,
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 2,
+                  backdropFilter: 'blur(10px)',
+                  background: trend === 'up' 
+                    ? alpha(theme.palette.success.main, 0.2)
+                    : alpha(theme.palette.error.main, 0.2),
+                  color: trend === 'up' ? theme.palette.success.main : theme.palette.error.main,
+                  border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(255, 255, 255, 0.1)'
+                    : '1px solid rgba(0, 0, 0, 0.1)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: `0 0 20px ${cardColor}33`,
+                  gap: 0.5,
                 }}
               >
-                {React.cloneElement(icon, { 
-                  sx: { 
-                    fontSize: 28,
-                    color: cardColor,
-                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
-                  }
-                })}
+                {trend === 'up' ? '↗' : '↘'} {trendValue}%
               </Box>
-              {trend && (
-                <Box
-                  sx={{
-                    px: 1,
-                    py: 0.5,
-                    borderRadius: 2,
-                    backdropFilter: 'blur(10px)',
-                    background: trend === 'up' 
-                      ? 'rgba(16, 185, 129, 0.2)' 
-                      : 'rgba(239, 68, 68, 0.2)',
-                    color: trend === 'up' ? '#10b981' : '#ef4444',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                  }}
-                >
-                  {trend === 'up' ? '↗' : '↘'} {trendValue}%
-                </Box>
-              )}
-            </Box>
-            <Typography 
-              variant="h3" 
-              fontWeight={800}
-              sx={{
-                background: `linear-gradient(45deg, #fff 30%, ${cardColor} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                mb: 0.5,
-                textShadow: `0 0 20px ${cardColor}40`,
-              }}
-            >
-              {value}
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: alpha(theme.palette.common.white, 0.7),
-                fontSize: '0.9rem',
-              }}
-            >
-              {title}
-            </Typography>
-            {subtitle && (
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: alpha(theme.palette.common.white, 0.6),
-                  display: 'block',
-                  mt: 0.5,
-                }}
-              >
-                {subtitle}
-              </Typography>
             )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  };
+          </Box>
+          <Typography 
+            variant="h3" 
+            fontWeight={800}
+            sx={{
+              background: `linear-gradient(45deg, ${theme.palette.text.primary} 30%, ${cardColor} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 0.5,
+            }}
+          >
+            {value}
+          </Typography>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: theme.palette.text.secondary,
+              fontSize: '0.9rem',
+            }}
+          >
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: theme.palette.text.secondary,
+                display: 'block',
+                mt: 0.5,
+              }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
   // QuickActionCard component
   const QuickActionCard = ({ title, description, icon, gradient, onClick }) => {
-    const getColorFromGradient = () => {
-      if (!gradient) return '#8B5CF6';
-      const colors = gradient.match(/#[0-9A-F]{6}/gi);
-      return colors ? colors[0] : '#8B5CF6';
-    };
+  const getColorFromGradient = () => {
+    if (!gradient) return '#8B5CF6';
+    const colors = gradient.match(/#[0-9A-F]{6}/gi);
+    return colors ? colors[0] : '#8B5CF6';
+  };
 
-    const cardColor = getColorFromGradient();
+  const cardColor = getColorFromGradient();
 
-    return (
-      <motion.div
-        whileHover={{ y: -8, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      >
-        <Card
-          onClick={onClick}
-          sx={{
-            cursor: 'pointer',
-            height: '100%',
-            borderRadius: 4,
-            backdropFilter: 'blur(20px)',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: `0 20px 40px rgba(0, 0, 0, 0.1)`,
-            position: 'relative',
-            overflow: 'hidden',
-            '&:hover': {
-              boxShadow: `0 25px 50px ${alpha(cardColor, 0.3)}`,
-              borderColor: alpha(cardColor, 0.5),
-              '& .gradient-overlay': {
-                opacity: 0.2,
-              },
-              '& .action-icon': {
-                transform: 'scale(1.1)',
-                filter: `drop-shadow(0 0 15px ${cardColor})`,
-              },
+  return (
+    <motion.div
+      whileHover={{ y: -8, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
+      <Card
+        onClick={onClick}
+        sx={{
+          cursor: 'pointer',
+          height: '100%',
+          borderRadius: 4,
+          backdropFilter: 'blur(20px)',
+          background: theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, 0.05)'
+            : 'rgba(255, 255, 255, 0.8)',
+          border: theme.palette.mode === 'dark'
+            ? '1px solid rgba(255, 255, 255, 0.2)'
+            : '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: theme.shadows[3],
+          position: 'relative',
+          overflow: 'hidden',
+          '&:hover': {
+            boxShadow: theme.shadows[8],
+            borderColor: alpha(cardColor, 0.5),
+            '& .gradient-overlay': {
+              opacity: 0.2,
             },
-            transition: 'all 0.3s ease',
+            '& .action-icon': {
+              transform: 'scale(1.1)',
+            },
+          },
+          transition: 'all 0.3s ease',
+        }}
+      >
+        <Box
+          className="gradient-overlay"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '100%',
+            background: gradient,
+            opacity: 0.1,
+            transition: 'opacity 0.3s ease',
           }}
-        >
-          <Box
-            className="gradient-overlay"
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '100%',
-              background: gradient,
-              opacity: 0.1,
-              transition: 'opacity 0.3s ease',
-            }}
-          />
+        />
 
-          <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+        <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+            }}
+          >
             <Box
+              className="action-icon"
               sx={{
+                width: 56,
+                height: 56,
+                borderRadius: 2,
+                background: theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                mb: 2,
+                justifyContent: 'center',
+                border: theme.palette.mode === 'dark'
+                  ? '1px solid rgba(255, 255, 255, 0.2)'
+                  : '1px solid rgba(0, 0, 0, 0.1)',
+                boxShadow: `0 0 20px ${alpha(cardColor, 0.1)}`,
+                transition: 'all 0.3s ease',
               }}
             >
-              <Box
-                className="action-icon"
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 2,
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: `0 0 20px ${alpha(cardColor, 0.3)}`,
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {React.cloneElement(icon, {
-                  sx: {
-                    fontSize: 28,
-                    color: cardColor,
-                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))',
-                  },
-                })}
-              </Box>
+              {React.cloneElement(icon, {
+                sx: {
+                  fontSize: 28,
+                  color: cardColor,
+                },
+              })}
             </Box>
+          </Box>
 
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              gutterBottom
-              sx={{
-                color: '#fff',
-                mb: 1,
-              }}
-            >
-              {title}
-            </Typography>
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            gutterBottom
+            sx={{
+              color: theme.palette.text.primary,
+              mb: 1,
+            }}
+          >
+            {title}
+          </Typography>
 
-            <Typography
-              variant="body2"
-              sx={{
-                color: alpha('#fff', 0.7),
-                fontSize: '0.875rem',
-                lineHeight: 1.5,
-              }}
-            >
-              {description}
-            </Typography>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  };
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: '0.875rem',
+              lineHeight: 1.5,
+            }}
+          >
+            {description}
+          </Typography>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
   const quickActions = [
     {
@@ -800,7 +808,9 @@ useEffect(() => {
               mb: 4,
               borderRadius: 4,
               backdropFilter: 'blur(20px)',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.02)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               boxShadow: `
                 0 8px 32px rgba(0, 0, 0, 0.3),
@@ -811,6 +821,7 @@ useEffect(() => {
                 boxShadow: '0 25px 50px rgba(139, 92, 246, 0.3)',
               },
               transition: 'all 0.3s ease',
+              
             }}
           >
             <CardContent sx={{ p: { xs: 3, md: 4 } }}>
@@ -822,6 +833,7 @@ useEffect(() => {
                     background: 'linear-gradient(135deg, #8B5CF6 0%, #0EA5E9 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
+                    
                   }}
                 >
                   Your Recent Reports ({recentReports.length})
@@ -866,10 +878,10 @@ useEffect(() => {
                         onClick={() => navigate(`/reports/${report._id}`)}
                       >
                         <CardContent>
-                          <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#fff' }}>
+                          <Typography variant="subtitle1" fontWeight={600} sx={{ color: theme.palette.text.primary  }}>
                             {report.title}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: alpha('#fff', 0.6) }}>
+                          <Typography variant="caption" sx={{ color: theme.palette.text.secondary  }}>
                             {report.category} • {report.status}
                           </Typography>
                         </CardContent>
