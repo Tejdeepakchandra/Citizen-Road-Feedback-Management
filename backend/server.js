@@ -16,6 +16,9 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+// ⚠️ IMPORTANT: Trust proxy for rate limiting & client IP detection on Render/cloud
+app.set("trust proxy", 1);
+
 // Rate limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
