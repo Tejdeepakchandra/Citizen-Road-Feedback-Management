@@ -201,7 +201,7 @@ export const authAPI = {
   forgotPassword: (email) => api.post("/auth/forgotpassword", { email }),
   resetPassword: (token, password) =>
     api.put(`/auth/resetpassword/${token}`, { password }),
-  logout: () => api.post("/auth/logout"),
+  logout: () => api.get("/auth/logout"),
 };
 
 // ===================== DASHBOARD API =====================
