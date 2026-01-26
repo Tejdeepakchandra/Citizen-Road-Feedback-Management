@@ -19,33 +19,50 @@ handlebars.registerHelper('if', function(conditional, options) {
 // Create transporter - Support both SMTP and SendGrid
 let transporter;
 
-if (process.env.SENDGRID_API_KEY) {
-  // Use SendGrid for production
-  const sgMail = require('@sendgrid/mail');
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  transporter = { useSendGrid: true, client: sgMail };
-  console.log('✅ SendGrid configured for email sending');
-} else {
-  // Use SMTP fallback
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+function initializeTransporter() {
+  const sendgridApiKey = process.env.SENDGRID_API_KEY?.trim();
   
-  // Verify connection
-  transporter.verify(function (error, success) {
-    if (error) {
-      console.error('❌ SMTP connection error:', error);
-    } else {
-      console.log('✅ SMTP server is ready');
+  if (sendgridApiKey && sendgridApiKey.length > 0) {
+    try {
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(sendgridApiKey);
+      transporter = { useSendGrid: true, client: sgMail };
+      console.log('✅ SendGrid configured for email sending');
+      return;
+    } catch (err) {
+      console.error('⚠️ SendGrid package error:', err.message);
+      console.log('📧 Falling back to SMTP...');
     }
-  });
+  }
+  
+  // Use SMTP fallback
+  if (process.env.SMTP_HOST) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: process.env.SMTP_PORT === '465',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+    
+    // Verify connection
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.error('❌ SMTP connection error:', error);
+      } else {
+        console.log('✅ SMTP server is ready');
+      }
+    });
+  } else {
+    console.warn('⚠️ No email service configured (no SendGrid API key or SMTP settings)');
+    transporter = null;
+  }
 }
+
+// Initialize on startup
+initializeTransporter();
 
 // Load email templates
 const templates = {};
@@ -516,18 +533,6 @@ loadTemplates();
 // Send email function
 exports.sendEmail = async ({ to, subject, template, context = {}, attachments = [] }) => {
   try {
-    // ⚠️ PRODUCTION: Skip email sending on Render free tier (SMTP blocked)
-    if (process.env.NODE_ENV === 'production') {
-      console.log(`📧 [PRODUCTION] Email skipped - Render free tier blocks SMTP`);
-      console.log(`   To: ${to}`);
-      console.log(`   Subject: ${subject}`);
-      console.log(`   Template: ${template}`);
-      return { 
-        messageId: 'SKIPPED_IN_PRODUCTION',
-        message: 'Email skipped in production mode'
-      };
-    }
-
     // Ensure templates are loaded
     if (Object.keys(templates).length === 0) {
       console.log('📧 Templates not loaded yet, loading now...');
@@ -565,27 +570,54 @@ exports.sendEmail = async ({ to, subject, template, context = {}, attachments = 
     console.log(`📧 Attempting to send email to: ${to}`);
     console.log(`📧 Using template: ${template}`);
     console.log(`📧 Subject: ${subject}`);
+    console.log(`📧 Using service: ${transporter?.useSendGrid ? 'SendGrid' : 'SMTP'}`);
+
+    if (!transporter) {
+      console.error('❌ No email transporter configured');
+      return { 
+        messageId: 'NO_SERVICE',
+        error: 'No email service configured',
+        success: false
+      };
+    }
 
     // Use SendGrid if configured, otherwise use SMTP
     if (transporter.useSendGrid) {
-      const msg = {
-        to: Array.isArray(to) ? to[0] : to,
-        from: process.env.FROM_EMAIL || 'noreply@smartroad.com',
-        subject,
-        html,
-        attachments: attachments.map(att => ({
-          filename: att.filename,
-          content: att.content,
-          contentType: att.contentType
-        }))
-      };
+      try {
+        const msg = {
+          to: Array.isArray(to) ? to[0] : to,
+          from: process.env.FROM_EMAIL || 'noreply@smartroad.com',
+          subject,
+          html,
+          attachments: attachments.map(att => ({
+            filename: att.filename,
+            content: att.content,
+            contentType: att.contentType
+          }))
+        };
 
-      const result = await transporter.client.send(msg);
-      console.log(`✅ Email sent via SendGrid to ${to}: ${result[0]?.messageId}`);
-      return { 
-        messageId: result[0]?.messageId || 'SENT',
-        success: true
-      };
+        console.log(`📧 SendGrid message payload:`, { 
+          to: msg.to, 
+          from: msg.from, 
+          subject: msg.subject,
+          htmlLength: html.length 
+        });
+
+        const result = await transporter.client.send(msg);
+        console.log(`✅ Email sent via SendGrid to ${to}:`, result);
+        return { 
+          messageId: result[0]?.messageId || 'SENT',
+          success: true
+        };
+      } catch (sgError) {
+        console.error('❌ SendGrid error:', sgError);
+        console.error('SendGrid error details:', {
+          message: sgError.message,
+          code: sgError.code,
+          response: sgError.response?.body || sgError.response
+        });
+        throw sgError;
+      }
     } else {
       const info = await transporter.sendMail(mailOptions);
       console.log(`✅ Email sent to ${to}: ${info.messageId}`);
@@ -593,6 +625,7 @@ exports.sendEmail = async ({ to, subject, template, context = {}, attachments = 
     }
   } catch (error) {
     console.error(`❌ Error sending email to ${to}:`, error);
+    console.error('Full error:', error);
     // Log but don't throw - email failures shouldn't block operations
     return { 
       messageId: 'ERROR',
