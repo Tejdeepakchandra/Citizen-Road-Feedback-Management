@@ -34,22 +34,22 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "http://localhost:5000"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       connectSrc: [
-  "'self'",
-  "http://localhost:5173",   // Vite React frontend
-  "http://localhost:5000",   // Backend API
-  "ws://localhost:5000"      // Socket.IO
-]
-
+        "'self'",
+        process.env.CLIENT_URL,
+        "wss://*.onrender.com",
+        "wss://*.vercel.app"
+      ]
     }
   }
 }));
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
 // Body parser middleware
@@ -107,7 +107,8 @@ const startServer = async () => {
     // Start listening
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📍 API URL: http://localhost:${PORT}/api`);
+      console.log(`📍 API running in ${process.env.NODE_ENV} mode`);
+      console.log(`📍 CLIENT_URL: ${process.env.CLIENT_URL}`);
       console.log(`📁 Uploads folder: ${path.join(__dirname, '../uploads')}`);
     });
 
