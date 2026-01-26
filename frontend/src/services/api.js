@@ -4,17 +4,26 @@ const API_URL = import.meta.env.VITE_API_URL || "https://citizen-road-backend.on
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor
+// Request interceptor - Add token to all requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Debug: Log token being sent (remove in production)
+      if (import.meta.env.DEV) {
+        console.log('🔑 Token sent with request to:', config.url);
+      }
+    } else {
+      if (import.meta.env.DEV) {
+        console.warn('⚠️ No token found in localStorage for request to:', config.url);
+      }
     }
     return config;
   },
@@ -28,6 +37,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      console.error('❌ Unauthorized (401):', error.response?.data?.message);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";

@@ -10,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://citizen-road-backend.on
 // AXIOS INSTANCE
 export const axiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -18,6 +19,14 @@ axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    // Debug: Log token being sent (remove in production)
+    if (import.meta.env.DEV) {
+      console.log('🔑 Token sent with axiosInstance request to:', config.url);
+    }
+  } else {
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ No token found in localStorage for axiosInstance request to:', config.url);
+    }
   }
   return config;
 });
