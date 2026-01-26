@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
@@ -42,8 +42,14 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("user");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
-      window.location.href = "/login";
-      toast.error("Session expired. Please login again.");
+      
+      // Use navigate if available, otherwise use window.location
+      if (navigateRef.current) {
+        navigateRef.current('/login');
+        toast.error("Session expired. Please login again.");
+      } else {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(err);
   }
@@ -56,6 +62,13 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+// Store navigate ref globally so interceptors can use it
+const navigateRef = { current: null };
+
+export const setNavigate = (navigate) => {
+  navigateRef.current = navigate;
 };
 
 // Auth Provider
@@ -203,7 +216,7 @@ export const AuthProvider = ({ children }) => {
   // --------------------------
   // 🟢 LOGOUT
   // --------------------------
-  const logout = useCallback(() => {
+  const logout = useCallback((navigateFn = null) => {
     // Clear from both storage methods
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -218,8 +231,12 @@ export const AuthProvider = ({ children }) => {
 
     toast.success("Logged out!");
 
-    // Navigate to login page
-    if (window.location.pathname !== '/login') {
+    // Navigate to login page using provided navigate or ref
+    const navigate = navigateFn || navigateRef.current;
+    if (navigate && window.location.pathname !== '/login') {
+      navigate('/login');
+    } else if (!navigate && window.location.pathname !== '/login') {
+      // Fallback to location href if navigate not available
       window.location.href = "/login";
     }
 
@@ -335,6 +352,7 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     updateUser,
     changePassword,
+    setNavigate: (nav) => { navigateRef.current = nav; },
     isAuthenticated: !!token && isTokenValid(token),
     isAdmin: user?.role === "admin",
     isStaff: user?.role === "staff",
