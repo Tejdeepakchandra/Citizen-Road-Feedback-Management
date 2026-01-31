@@ -55,7 +55,8 @@ const {
   completeForReview,
   updateReportProgress,
   completeTask,
-  uploadGalleryImages
+  uploadGalleryImages,
+  rejectReport
 } = require('../controllers/report.controller');
 
 const { protect, authorize } = require('../middleware/auth');
@@ -101,6 +102,9 @@ router.post('/:id/gallery', upload.single('afterImage'), uploadGalleryImages);
 // Admin completion review routes
 router.put('/:id/approve', authorize('admin'), approveCompletion);
 router.put('/:id/reject', authorize('admin'), rejectCompletion);
+
+// Admin report rejection route (NEW FEATURE)
+router.put('/:id/reject-report', authorize('admin'), rejectReport);
 
 // Staff completion route - FIXED: Use the correct function
 router.put('/:id/complete', upload.array('images', 5), completeTask); // For staff to mark as completed

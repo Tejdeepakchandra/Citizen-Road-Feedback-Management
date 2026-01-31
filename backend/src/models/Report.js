@@ -282,7 +282,20 @@ staffCompletedBy: {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'User'
 },
-  
+// NEW: Fields for direct report rejection by admin (different from completion rejection)
+reportRejected: {
+  type: Boolean,
+  default: false
+},
+
+reportRejectionReason: String,
+
+reportRejectedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User'
+},
+
+reportRejectedAt: Date,  
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

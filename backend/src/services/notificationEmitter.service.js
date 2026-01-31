@@ -829,4 +829,45 @@ exports.notifySystemAlert = async (title, message, recipients = 'all') => {
   });
 };
 
+/**
+ * Notify user when their report is rejected by admin (NEW FEATURE)
+ */
+exports.notifyReportRejected = async (report, adminUser, rejectionReason) => {
+  console.log('🔴 Emitting report rejection notification to user');
+  
+  try {
+    const userId = extractUserId(report.user);
+    if (!userId) {
+      console.error('❌ Invalid user ID for report rejection notification');
+      return;
+    }
+
+    // Create in-app notification
+    const notification = await createAndEmit({
+      recipients: [userId],
+      sender: adminUser._id,
+      type: 'report_rejected',
+      title: 'Report Rejected',
+      message: `Your report "${report.title}" has been rejected by ${adminUser.name}. Reason: ${rejectionReason}`,
+      priority: 'high',
+      metadata: {
+        source: 'admin.controller',
+        category: 'reports',
+        tags: ['rejection', 'report', 'user-action-required'],
+        reportId: report._id.toString(),
+        reportTitle: report.title,
+        rejectionReason: rejectionReason,
+        rejectedBy: adminUser.name,
+        reportCategory: report.category
+      }
+    });
+
+    console.log('✅ Report rejection notification emitted successfully');
+    return notification;
+  } catch (error) {
+    console.error('❌ Error emitting report rejection notification:', error);
+    throw error;
+  }
+};
+
 module.exports = exports;
