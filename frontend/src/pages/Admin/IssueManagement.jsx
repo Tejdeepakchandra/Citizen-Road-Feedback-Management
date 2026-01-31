@@ -67,6 +67,7 @@ import {
   Timeline,
   Download,
   Print,
+  Block,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -244,6 +245,30 @@ const api = {
       throw error;
     }
   },
+
+  // NEW: Reject report directly (admin rejection feature)
+  async rejectReport(reportId, rejectionReason = "") {
+    try {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
+      const response = await axios.put(
+        `${API_BASE_URL}/reports/${reportId}/reject-report`,
+        {
+          rejectionReason: rejectionReason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Reject Report API Error:", error);
+      throw error;
+    }
+  },
 };
 
 const IssueManagement = () => {
@@ -259,6 +284,7 @@ const IssueManagement = () => {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
 
   // Filter states
@@ -279,6 +305,11 @@ const IssueManagement = () => {
   // Review form
   const [reviewForm, setReviewForm] = useState({
     adminNotes: "",
+  });
+
+  // NEW: Rejection form
+  const [rejectionForm, setRejectionForm] = useState({
+    rejectionReason: "",
   });
 
   // Status change form
@@ -935,6 +966,97 @@ const handleRejectCompletion = async () => {
     });
   }
 };
+
+  const handleRejectClick = (report) => {
+    setSelectedReport(report);
+    setRejectionForm({ rejectionReason: '' });
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectSubmit = async () => {
+    try {
+      if (!selectedReport) return;
+
+      if (!rejectionForm.rejectionReason.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Please provide a rejection reason',
+          severity: 'warning',
+        });
+        return;
+      }
+
+      console.log('Rejecting report:', selectedReport._id);
+
+      if (apiMode === 'demo') {
+        // Demo mode
+        const updatedReports = reports.map(report =>
+          report._id === selectedReport._id
+            ? {
+                ...report,
+                status: 'rejected',
+                reportRejected: true,
+                reportRejectionReason: rejectionForm.rejectionReason,
+                reportRejectedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+            : report
+        );
+
+        setReports(updatedReports);
+        setRejectDialogOpen(false);
+        
+        setSnackbar({
+          open: true,
+          message: 'Demo: Report rejected successfully',
+          severity: 'success',
+        });
+      } else {
+        // Live mode
+        await api.rejectReport(selectedReport._id, rejectionForm.rejectionReason);
+        
+        // Update local state
+        const updatedReports = reports.map(report =>
+          report._id === selectedReport._id
+            ? {
+                ...report,
+                status: 'rejected',
+                reportRejected: true,
+                reportRejectionReason: rejectionForm.rejectionReason,
+                reportRejectedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+            : report
+        );
+
+        setReports(updatedReports);
+        setRejectDialogOpen(false);
+        
+        setSnackbar({
+          open: true,
+          message: 'Report rejected successfully. User has been notified.',
+          severity: 'success',
+        });
+        
+        setTimeout(() => {
+          fetchReports();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Reject report error:', error);
+      
+      let errorMessage = 'Failed to reject report';
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
+    }
+  };
 
   const handleStatusChange = async (reportId, newStatus, notes = "") => {
     try {
@@ -1648,6 +1770,18 @@ const handleRejectCompletion = async () => {
                                   </IconButton>
                                 </Tooltip>
                               )}
+
+                            {(report.status === "pending" || report.status === "assigned") && !report.reportRejected && (
+                              <Tooltip title="Reject Report">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleRejectClick(report)}
+                                  color="error"
+                                >
+                                  <Block />
+                                </IconButton>
+                              </Tooltip>
+                            )}
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -2500,6 +2634,100 @@ const handleRejectCompletion = async () => {
     </>
   )}
 </Dialog>
+
+        {/* Reject Report Dialog */}
+        <Dialog
+          open={rejectDialogOpen}
+          onClose={() => setRejectDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          {selectedReport && (
+            <>
+              <DialogTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Block sx={{ color: 'error.main' }} />
+                  <Typography variant="h6">Reject Report</Typography>
+                </Box>
+              </DialogTitle>
+              <DialogContent>
+                <Box sx={{ pt: 2 }}>
+                  <Typography variant="body1" paragraph>
+                    Are you sure you want to reject <strong>{selectedReport.title}</strong>?
+                  </Typography>
+
+                  <Card variant="outlined" sx={{ mb: 3, p: 2 }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <Typography variant="caption" color="text.secondary">
+                          Category:
+                        </Typography>
+                        <Chip
+                          icon={getCategoryIcon(selectedReport.category)}
+                          label={selectedReport.category?.replace('_', ' ')}
+                          size="small"
+                          sx={{ ml: 1, textTransform: 'capitalize' }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="caption" color="text.secondary">
+                          Status:
+                        </Typography>
+                        <Chip
+                          label={getStatusText(selectedReport.status, selectedReport.needsReview)}
+                          color={getStatusColor(selectedReport.status, selectedReport.needsReview)}
+                          size="small"
+                          sx={{ ml: 1 }}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="caption" color="text.secondary">
+                          Priority:
+                        </Typography>
+                        <Chip
+                          label={selectedReport.priority}
+                          color={getPriorityColor(selectedReport.priority)}
+                          size="small"
+                          sx={{ ml: 1 }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Card>
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="Rejection Reason"
+                    placeholder="Explain why this report is being rejected. The user will receive this feedback via email..."
+                    value={rejectionForm.rejectionReason}
+                    onChange={(e) =>
+                      setRejectionForm({ rejectionReason: e.target.value })
+                    }
+                    sx={{ mb: 2 }}
+                  />
+
+                  <Alert severity="warning">
+                    The user will be notified by email with your rejection reason. They can resubmit their report afterwards.
+                  </Alert>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setRejectDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<Block />}
+                  onClick={handleRejectSubmit}
+                >
+                  Reject Report
+                </Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
 
         {/* Snackbar */}
         <Snackbar
