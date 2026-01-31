@@ -14,12 +14,12 @@ router.get('/dashboard', adminController.getAdminDashboard);
 // User management
 router.get('/users', adminController.getAllUsers);
 router.post('/users', adminController.createUser);
-router.get('/users/:id', adminController.getUserById); // ADD THIS
+router.get('/users/:id', adminController.getUserById); 
 router.put('/users/:id', adminController.updateUser);
 router.delete('/users/:id', adminController.deleteUser);
 router.put('/users/:id/status', adminController.toggleUserStatus);
 router.put('/users/:id/role', adminController.updateUserRole);
-router.get('/users/:id/stats', adminController.getUserStats); // ADD THIS
+router.get('/users/:id/stats', adminController.getUserStats); 
 
 // Image approvals
 router.get('/images/pending', adminController.getPendingImages);
