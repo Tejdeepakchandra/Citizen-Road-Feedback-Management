@@ -2228,3 +2228,156 @@ exports.uploadGalleryImages = async (req, res) => {
     });
   }
 };
+
+// @desc    Admin rejects report (new feature)
+// @route   PUT /api/reports/:id/reject-report
+// @access  Private (Admin)
+exports.rejectReport = asyncHandler(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rejectionReason } = req.body;
+
+    if (!rejectionReason || !rejectionReason.trim()) {
+      return next(new ErrorResponse('Rejection reason is required', 400));
+    }
+
+    const report = await Report.findById(id)
+      .populate('user', 'name email avatar')
+      .populate('assignedTo', 'name email avatar');
+
+    if (!report) {
+      return next(new ErrorResponse('Report not found', 404));
+    }
+
+    // Check if report is already rejected
+    if (report.reportRejected) {
+      return next(new ErrorResponse('Report is already rejected', 400));
+    }
+
+    // Check if report is in completed state (can only reject pending/assigned reports or reject completed ones for re-evaluation)
+    if (report.status === 'closed') {
+      return next(new ErrorResponse('Cannot reject a closed report', 400));
+    }
+
+    // Update report with rejection details
+    report.reportRejected = true;
+    report.reportRejectionReason = rejectionReason.trim();
+    report.reportRejectedBy = req.user.id;
+    report.reportRejectedAt = new Date();
+    
+    // Set status based on previous state
+    if (report.status === 'pending' || report.status === 'under_review') {
+      report.status = 'rejected';
+      report.progress = 0;
+    } else if (report.status === 'assigned' || report.status === 'in_progress') {
+      // If report was already assigned/in progress, it goes to rejected
+      report.status = 'rejected';
+      report.progress = 0;
+    } else if (report.status === 'completed') {
+      // If completed but being rejected, keep it as rejected for review
+      report.status = 'rejected';
+    }
+
+    // Add rejection progress update
+    report.progressUpdates.push({
+      status: 'rejected',
+      description: `Report rejected by admin: ${rejectionReason}`,
+      percentage: 0,
+      updatedBy: req.user.id,
+      timestamp: new Date()
+    });
+
+    await report.save();
+
+    // Get fresh data for populating in response
+    const updatedReport = await Report.findById(report._id)
+      .populate('user', 'name email avatar')
+      .populate('reportRejectedBy', 'name email avatar')
+      .populate('assignedTo', 'name email avatar');
+
+    // Send rejection notification email to user
+    try {
+      await sendEmail({
+        to: updatedReport.user.email,
+        subject: `❌ Your Report Has Been Rejected: ${updatedReport.title}`,
+        template: 'report-rejected',
+        context: {
+          userName: updatedReport.user.name,
+          reportId: updatedReport._id.toString().slice(-8),
+          reportTitle: updatedReport.title,
+          reportCategory: updatedReport.category,
+          rejectionReason: rejectionReason,
+          rejectedBy: req.user.name,
+          address: updatedReport.location?.address,
+          date: new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          appUrl: process.env.CLIENT_URL || 'http://localhost:3000',
+          appName: 'Smart Road Feedback',
+          year: new Date().getFullYear()
+        }
+      });
+      console.log(`✅ Report rejection email sent to user: ${updatedReport.user.email}`);
+    } catch (emailError) {
+      console.error('❌ Report rejection email failed:', emailError);
+    }
+
+    // Create notification for user about rejection
+    try {
+      await createNotification({
+        user: req.user.id,
+        type: 'report_rejected',
+        title: 'Report Rejected',
+        message: `Your report "${updatedReport.title}" has been rejected. Reason: ${rejectionReason}`,
+        data: {
+          reportId: updatedReport._id,
+          rejectionReason: rejectionReason,
+          rejectedBy: req.user.name
+        },
+        recipients: [updatedReport.user._id],
+        priority: 'high'
+      });
+      console.log('✅ Rejection notification created for user');
+    } catch (notifError) {
+      console.error('❌ Notification creation failed:', notifError);
+    }
+
+    // 📬 Emit real-time notification to user
+    try {
+      await notificationEmitter.notifyReportRejected(
+        updatedReport,
+        req.user,
+        rejectionReason
+      );
+      console.log('✅ Real-time rejection notification emitted to user');
+    } catch (notifError) {
+      console.error('❌ Real-time notification failed:', notifError);
+    }
+
+    // Emit real-time update
+    try {
+      emitToSocket('report_rejected', {
+        reportId: updatedReport._id,
+        userId: updatedReport.user._id,
+        reportTitle: updatedReport.title,
+        rejectionReason: rejectionReason,
+        rejectedBy: req.user.id,
+        timestamp: new Date()
+      });
+    } catch (socketError) {
+      console.error('Socket emit failed:', socketError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Report rejected successfully',
+      data: updatedReport
+    });
+
+  } catch (error) {
+    console.error('Reject report error:', error);
+    next(error);
+  }
+});

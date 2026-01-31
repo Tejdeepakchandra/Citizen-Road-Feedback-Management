@@ -17,6 +17,7 @@ const NotificationSchema = new mongoose.Schema({
     enum: [
       'report_created',
       'report_assigned',
+      'report_rejected',
       'status_update',
       'progress_update',
       'report_completed',
